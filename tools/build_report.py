@@ -28,7 +28,7 @@ class SystemDiagram(Flowable):
     def __init__(self):
         super().__init__()
         self.width = 500
-        self.height = 95
+        self.height = 82
 
     def draw(self):
         c = self.canv
@@ -37,9 +37,9 @@ class SystemDiagram(Flowable):
             [("Student", 0), ("Browser UI", 1), ("Validation and\ncalculation", 2), ("Browser storage", 3)],
             [("Sample receipt", 0), ("Future extraction", 1), ("User confirms", 2), ("Browser UI", 3)],
         ]
-        box_w, box_h, gap = 110, 33, 17
+        box_w, box_h, gap = 110, 29, 17
         for row_i, row in enumerate(rows):
-            y = 65 - row_i * 53
+            y = 50 - row_i * 45
             for label, col in row:
                 x = col * (box_w + gap)
                 c.setFillColor(colors.HexColor("#edf3f8"))
@@ -48,7 +48,7 @@ class SystemDiagram(Flowable):
                 c.setFillColor(colors.HexColor("#17212b"))
                 lines = label.split("\n")
                 for j, line in enumerate(lines):
-                    c.drawCentredString(x + box_w / 2, y + 13 + (len(lines)-1-j)*5, line)
+                    c.drawCentredString(x + box_w / 2, y + 11 + (len(lines)-1-j)*5, line)
                 if col < 3:
                     c.setStrokeColor(colors.HexColor("#526d82"))
                     c.line(x + box_w + 2, y + box_h/2, x + box_w + gap - 5, y + box_h/2)
@@ -61,13 +61,15 @@ styles.add(ParagraphStyle(name="TitleCustom", fontName=FONT, fontSize=17, leadin
 styles.add(ParagraphStyle(name="MetaCustom", fontName=FONT, fontSize=9, leading=12,
                           spaceAfter=3))
 styles.add(ParagraphStyle(name="HeadingCustom", fontName=FONT, fontSize=11, leading=13,
-                          spaceBefore=11, spaceAfter=4, textColor=colors.HexColor("#102f49")))
-styles.add(ParagraphStyle(name="BodyCustom", fontName=FONT, fontSize=9.2, leading=12.4,
-                          spaceAfter=6, splitLongWords=1))
+                          spaceBefore=9, spaceAfter=3, textColor=colors.HexColor("#102f49")))
+styles.add(ParagraphStyle(name="BodyCustom", fontName=FONT, fontSize=9.2, leading=12,
+                          spaceAfter=5, splitLongWords=1))
 styles.add(ParagraphStyle(name="ReferenceCustom", parent=styles["BodyCustom"], fontSize=8.3,
                           leading=10.8, leftIndent=15, firstLineIndent=-15, spaceAfter=4))
 styles.add(ParagraphStyle(name="CaptionCustom", fontName=FONT, fontSize=8, leading=10,
                           alignment=TA_CENTER, spaceAfter=7))
+styles.add(ParagraphStyle(name="TableCellCustom", fontName=FONT, fontSize=8.3, leading=10.2,
+                          spaceAfter=0, splitLongWords=1))
 
 def inline_markup(line):
     line = escape(line)
@@ -99,17 +101,18 @@ for block in blocks:
         story.append(Paragraph(inline_markup(heading), styles["HeadingCustom"]))
     elif block.startswith("|"):
         lines = [line for line in block.splitlines() if not re.match(r"^\|\s*[-: ]+\|", line)]
-        cells = [[Paragraph(inline_markup(cell.strip()), styles["BodyCustom"])
+        cells = [[Paragraph(inline_markup(cell.strip()), styles["TableCellCustom"])
                   for cell in line.strip("|").split("|")] for line in lines]
-        table = Table(cells, colWidths=[110, 190, 190], hAlign="LEFT", repeatRows=1)
+        widths = [110, 190, 190] if "Criterion" in lines[0] else [135, 300, 55]
+        table = Table(cells, colWidths=widths, hAlign="LEFT", repeatRows=1)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e6eef4")),
             ("GRID", (0, 0), (-1, -1), .4, colors.HexColor("#c3d0da")),
             ("VALIGN", (0, 0), (-1, -1), "TOP"),
             ("LEFTPADDING", (0, 0), (-1, -1), 7),
             ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
         ]))
         story.append(table)
         story.append(Spacer(1, 7))
@@ -126,7 +129,7 @@ def footer(canvas, doc):
     canvas.restoreState()
 
 doc = SimpleDocTemplate(str(OUTPUT), pagesize=(612, 792), leftMargin=55,
-                        rightMargin=55, topMargin=45, bottomMargin=45,
+                        rightMargin=55, topMargin=40, bottomMargin=40,
                         title="Student Budget Assignment 1 Draft", author="Guo HouYang")
 doc.build(story, onFirstPage=footer, onLaterPages=footer)
 print(OUTPUT)
