@@ -44,7 +44,7 @@ The intended workflow is Issue with acceptance criteria, short branch, implement
 
 ## 5. Individual contributions
 
-Guo HouYang directed and produced the current proof of concept and planning draft, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). Chen GuangYuan is assigned UI and usability review, Li Hao acceptance testing and category totals, and Shang JiaLe documentation, risk review, and the optional image experiment. These are future responsibilities, not completed contributions. The final version must replace this paragraph with verified activities and links for each member. If the work remains solely Guo's, the contribution record must say so.
+Guo HouYang directed the current proof of concept and planning draft with Codex assistance, checked the tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). This AI assistance must be disclosed in line with the course policy. Chen GuangYuan is assigned UI and usability review, Li Hao acceptance testing and category totals, and Shang JiaLe documentation, risk review, and the optional image experiment. These are future responsibilities, not completed contributions. The final version must replace this paragraph with verified activities and links for each member. If the work remains solely Guo's, the contribution record must say so.
 
 ## Evidence index
 
