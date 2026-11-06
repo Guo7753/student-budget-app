@@ -40,7 +40,7 @@ flowchart LR
 
 ## 4. Collaborative workflow and trial
 
-The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) passed. Local implementation showed that date parsing alone can normalize a nonexistent calendar date, so an explicit validation rule and regression test now reject it. The PR is still open and **has not received a teammate review**; a review is needed to complete the collaborative trial and record what the team learned from the handoff.
+The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The latest [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) passed; the application also served successfully through `npm start`. Local implementation showed that date parsing alone can normalize a nonexistent calendar date, so an explicit validation rule and regression test now reject it. The PR is still open and **has not received a teammate review**; a review is needed to complete the collaborative trial and record what the team learned from the handoff.
 
 ## 5. Individual contributions
 
@@ -48,7 +48,7 @@ Guo HouYang directed and produced the current proof of concept and planning draf
 
 ## Evidence index
 
-The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) are available. The submission commit and teammate review remain pending. Ensure the assessor can access this private repository.
+The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) are available. The submission commit and teammate review remain pending. Ensure the assessor can access this private repository.
 
 ## References
 
