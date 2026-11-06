@@ -16,7 +16,7 @@ The planned scope is manual expense entry, a monthly list, deletion or correctio
 
 ## 2. Development approach
 
-A plan-driven approach would define features and design in detail before implementation. It gives clear documentation and traceability, but a student-facing interface may need changes after a quick usability check. An iterative and incremental approach delivers a small usable slice, tests it, and adjusts the next slice based on feedback. Its cost is more frequent coordination and a need to control scope. Empirical literature finds benefits of agile practices but also notes that evidence and context matter (Dybå & Dingsøyr, 2008; Serrador & Pinto, 2015).
+A plan-driven approach would define features and design in detail before implementation. It gives clear documentation and traceability, but a student-facing interface may need changes after a quick usability check. An iterative and incremental approach delivers a small usable slice, tests it, and adjusts the next slice based on feedback. Its cost is more frequent coordination and a need to control scope. Dybå and Dingsøyr's (2008) systematic review cautions that empirical evidence varies by practice and context. Serrador and Pinto (2015) analysed 1,002 projects and found a positive association between agile use and project efficiency and stakeholder satisfaction; that result supports experimentation here but does not guarantee success for this team.
 
 | Criterion | Plan-driven | Iterative and incremental |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ flowchart LR
 
 ## 4. Collaborative workflow and trial
 
-The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) passed. The PR is still open and **has not received a teammate review**, so the workflow trial and its reflection are incomplete. We will describe the actual lesson learned after review, rather than inventing one.
+The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) passed. Local implementation showed that date parsing alone can normalize a nonexistent calendar date, so an explicit validation rule and regression test now reject it. The PR is still open and **has not received a teammate review**; a review is needed to complete the collaborative trial and record what the team learned from the handoff.
 
 ## 5. Individual contributions
 
