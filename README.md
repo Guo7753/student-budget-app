@@ -4,7 +4,7 @@ A small browser-based expense tracker proposed for the CISE software engineering
 
 ## Run
 
-Use a local static server because JavaScript modules do not reliably run from a `file://` URL. From the repository root, run `python -m http.server 8000` (or any equivalent static server), then open `http://localhost:8000`. No package installation is needed for the app. Data is stored in this browser's localStorage. Currency is displayed as dollars for the prototype; the team should confirm the intended currency with the lecturer or users.
+Install Node.js 18 or later. From the repository root, run `npm start`, then open `http://127.0.0.1:8000`. No package download is needed. Data is stored in this browser's localStorage. Currency is displayed as dollars for the prototype; the team should confirm the intended currency with the lecturer or users.
 
 ## Test
 
