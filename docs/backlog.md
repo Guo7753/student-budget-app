@@ -4,11 +4,11 @@ Project goal: help a university student record everyday expenses and understand 
 
 | ID | Priority | User story and acceptance criteria | Planned owner | Iteration |
 | --- | --- | --- | --- | --- |
-| B1 | Must | As a student, I can save an expense with amount, date, category, and optional note. A valid entry appears after saving and after reload. Zero, negative, or missing amount cannot be saved. | Guo, with Chen reviewing interaction | 1 |
-| B2 | Must | As a student, I can see expenses for a selected month and delete one. The deleted entry disappears and the total changes. | Guo, with Li testing | 1 |
-| B3 | Must | As a student, I can see total spending by category for a month. Given known fixtures, each category sum and overall sum are exact to two decimals. | Li, with Guo integrating | 2 |
-| B4 | Should | As a student, I can edit an incorrect record. After saving, both list and totals reflect the corrected values. | Chen, with Li testing | 2 |
-| B5 | Could | As a student, I can upload a sample receipt and see proposed date and amount. I can edit both, and nothing is saved until I confirm. If extraction fails, I can enter data manually. | Shang, with Guo reviewing | 2 stretch |
+| [B1](https://github.com/Guo7753/student-budget-app/issues/1) | Must | As a student, I can save an expense with amount, date, category, and optional note. A valid entry appears after saving and after reload. Zero, negative, or missing amount cannot be saved. | Guo, with Chen reviewing interaction | 1 |
+| [B2](https://github.com/Guo7753/student-budget-app/issues/3) | Must | As a student, I can see expenses for a selected month and delete one. The deleted entry disappears and the total changes. | Guo, with Li testing | 1 |
+| [B3](https://github.com/Guo7753/student-budget-app/issues/4) | Must | As a student, I can see total spending by category for a month. Given known fixtures, each category sum and overall sum are exact to two decimals. | Li, with Guo integrating | 2 |
+| [B4](https://github.com/Guo7753/student-budget-app/issues/5) | Should | As a student, I can edit an incorrect record. After saving, both list and totals reflect the corrected values. | Chen, with Li testing | 2 |
+| [B5](https://github.com/Guo7753/student-budget-app/issues/6) | Could | As a student, I can upload a sample receipt and see proposed date and amount. I can edit both, and nothing is saved until I confirm. If extraction fails, I can enter data manually. | Shang, with Guo reviewing | 2 stretch |
 
 Iteration 1 goal: a student can reliably enter, inspect, and delete expenses. Evaluation: B1 and B2 acceptance tests pass; one user completes the flow without help; a reviewed Pull Request and automated check are visible in GitHub.
 
