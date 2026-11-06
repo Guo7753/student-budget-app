@@ -71,6 +71,7 @@ styles.add(ParagraphStyle(name="CaptionCustom", fontName=FONT, fontSize=8, leadi
 
 def inline_markup(line):
     line = escape(line)
+    line = re.sub(r"\[([^]]+)\]\((https?://[^)]+)\)", r'<link href="\2"><u>\1</u></link>', line)
     line = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<i>\1</i>", line)
     line = line.replace("  ", "<br/>")
