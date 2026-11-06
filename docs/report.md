@@ -5,7 +5,8 @@
 **Members:** Guo HouYang (team lead), Chen GuangYuan, Li Hao, Shang JiaLe  
 **Student IDs:** to be supplied by the group  
 **Project approval:** pending lecturer confirmation  
-**Repository and submission commit:** pending GitHub upload  
+**Repository:** https://github.com/Guo7753/student-budget-app  
+**Submission commit:** pending reviewed merge  
 
 ## 1. Project definition
 
@@ -39,15 +40,15 @@ flowchart LR
 
 ## 4. Collaborative workflow and trial
 
-The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. A local `feature/expense-entry` branch contains a proof of concept for manual entry, validation, monthly listing and total, and deletion (commit `1d51e8c`). Five automated tests pass locally. This demonstrates a working code and test foundation, but the GitHub Issue, reviewed Pull Request, hosted check, and team reflection are **not yet complete**. The evidence index marks each missing link. We will describe the actual lesson learned after the reviewed trial, rather than inventing one.
+The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) passed. The PR is still open and **has not received a teammate review**, so the workflow trial and its reflection are incomplete. We will describe the actual lesson learned after review, rather than inventing one.
 
 ## 5. Individual contributions
 
-Guo HouYang directed and produced the current local proof of concept and planning draft. Chen GuangYuan is assigned UI and usability review, Li Hao acceptance testing and category totals, and Shang JiaLe documentation, risk review, and the optional image experiment. These are future responsibilities, not completed contributions. The final version must replace this paragraph with verified activities and links for each member. If the work remains solely Guo's, the contribution record must say so.
+Guo HouYang directed and produced the current proof of concept and planning draft, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). Chen GuangYuan is assigned UI and usability review, Li Hao acceptance testing and category totals, and Shang JiaLe documentation, risk review, and the optional image experiment. These are future responsibilities, not completed contributions. The final version must replace this paragraph with verified activities and links for each member. If the work remains solely Guo's, the contribution record must say so.
 
 ## Evidence index
 
-The repository link, submission commit, backlog link, tracked Issue, reviewed Pull Request, and GitHub Actions result must be inserted here after they exist. The detailed checklist is in `docs/evidence-index.md`. Ensure the assessor can access every link.
+The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42189317660) are available. The submission commit and teammate review remain pending. Ensure the assessor can access this private repository.
 
 ## References
 
