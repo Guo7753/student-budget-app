@@ -28,9 +28,19 @@ We propose two short iterations with an ordered backlog, explicit acceptance cri
 
 ## 3. Plan and design
 
-The highest-priority backlog items are B1, save a valid expense and reject zero or negative amounts; B2, show and delete monthly records; B3, calculate category and overall totals against known fixtures; and B4, edit an incorrect record. B5, receipt-assisted entry, is optional and requires manual confirmation. The full acceptance criteria and owners are in the linked backlog. Iteration 1 succeeds when a student can enter, find, and delete a record and the tests pass. Iteration 2 succeeds when category totals are exact for a known dataset and a user can correct a record. The team will defer B5 if B1-B4 are incomplete.
+The proposed owners and testable acceptance criteria are below; assignment of a role is not evidence that the work has been done.
 
-The system has a browser interface, a separate validation and calculation module, and browser localStorage. Separation allows logic tests without browser setup; localStorage keeps the prototype simple but loses data if browser storage is cleared. The optional image path would suggest values for user confirmation and would use only synthetic or consented examples. The main risks are excess scope, inaccurate extraction, integration conflicts, and privacy. We address them through backlog priority, manual verification, small reviewed changes, and avoiding real receipt images in the repository.
+| Item and proposed owner | Testable acceptance | Iteration |
+| --- | --- | --- |
+| B1 Guo | Valid entry persists after reload; zero or negative amount is rejected | 1 |
+| B2 Guo, Li testing | Month filter shows matching records; deletion updates total | 1 |
+| B3 Li, Guo integrating | Known fixture gives exact category and overall totals | 2 |
+| B4 Chen, Li testing | Valid edit updates list and total; invalid edit is rejected | 2 |
+| B5 Shang, stretch | Receipt suggestions require user correction and confirmation | 2 |
+
+Iteration 1 succeeds when a student can enter, find, and delete a record and the tests pass. Iteration 2 succeeds when category totals match a known dataset and a user can correct a record. B5 begins only if B1-B4 are complete.
+
+The system has a browser interface, a separate validation and calculation module, and browser localStorage. Separation allows logic tests without browser setup; localStorage keeps the prototype simple but loses data if browser storage is cleared. The optional image path would suggest values for user confirmation and would use only synthetic or consented examples. To control scope growth, we defer B5 until core work passes; to prevent extraction errors, users confirm fields before saving. Small branches and reviews reduce integration conflicts. Synthetic or consented receipts protect privacy, and no real receipt images belong in the repository.
 
 ```mermaid
 flowchart LR
