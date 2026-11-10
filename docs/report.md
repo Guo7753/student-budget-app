@@ -1,6 +1,6 @@
 # Student Budget: Investigation and Project Plan
 
-**CISE Assignment 1 | Group report draft | 6 November 2026**
+**CISE Assignment 1 | Group report draft | 10 November 2026**
 
 **Members:** Guo HouYang (team lead), Chen GuangYuan, Li Hao, Shang JiaLe  
 **Student IDs:** to be supplied by the group  
@@ -28,7 +28,7 @@ We propose two short iterations with an ordered backlog, explicit acceptance cri
 
 ## 3. Plan and design
 
-The proposed owners and testable acceptance criteria are below; assignment of a role is not evidence that the work has been done.
+The backlog sets proposed owners and testable outcomes; role assignments are not completed contributions.
 
 | Item and proposed owner | Testable acceptance | Iteration |
 | --- | --- | --- |
@@ -38,9 +38,11 @@ The proposed owners and testable acceptance criteria are below; assignment of a 
 | B4 Chen, Li testing | Valid edit updates list and total; invalid edit is rejected | 2 |
 | B5 Shang, stretch | Receipt suggestions require user correction and confirmation | 2 |
 
-Iteration 1 succeeds when a student can enter, find, and delete a record and the tests pass. Iteration 2 succeeds when category totals match a known dataset and a user can correct a record. B5 begins only if B1-B4 are complete.
+Iteration 1 delivers tested entry, month filtering, and deletion. Iteration 2 delivers tested category totals and editing. Shang will run [Q1](https://github.com/Guo7753/student-budget-app/issues/7), checking whether a synthetic HTML note displays literally and recording the browser, input, steps, and result. B5 starts only after required work passes.
 
-The system has a browser interface, a separate validation and calculation module, and browser localStorage. Separation allows logic tests without browser setup; localStorage keeps the prototype simple but loses data if browser storage is cleared. The optional image path would suggest values for user confirmation and would use only synthetic or consented examples. To control scope growth, we defer B5 until core work passes; to prevent extraction errors, users confirm fields before saving. Small branches and reviews reduce integration conflicts. Synthetic or consented receipts protect privacy, and no real receipt images belong in the repository.
+The browser UI calls a separate validation and calculation module and stores records in localStorage (Figure 1). This allows logic tests without browser setup, though storage can be cleared. Risks and responses are scope growth (defer B5), extraction errors (confirm fields), integration conflicts (small reviewed PRs), and receipt privacy (synthetic or consented images only).
+
+To evaluate process improvement, both iterations will record the share of completed items linked to Issue, PR, test, and CI evidence; hours to first teammate review; and review rounds. The first retrospective will choose a change from those results. The second will repeat the measures and account for task size and reviewer availability.
 
 ```mermaid
 flowchart LR
@@ -50,15 +52,15 @@ flowchart LR
 
 ## 4. Collaborative workflow and trial
 
-The intended workflow is Issue with acceptance criteria, short branch, implementation and test, Pull Request, review by another member, automated check, then merge. The tracked requirement is [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1). [Pull Request 2](https://github.com/Guo7753/student-budget-app/pull/2) adds manual entry, validation, monthly listing and total, deletion, and five automated tests. The latest [GitHub Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) passed; the application also served successfully through `npm start`. Local implementation showed that date parsing alone can normalize a nonexistent calendar date, so an explicit validation rule and regression test now reject it. The PR is still open and **has not received a teammate review**; a review is needed to complete the collaborative trial and record what the team learned from the handoff.
+The workflow is Issue, short branch, implementation and test, teammate PR review, CI, then merge. [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) tracks entry; [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) adds the prototype and five tests. The latest [Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) passed, and `npm start` served the app. Local work exposed that date parsing can normalize nonexistent dates, so a regression test now rejects them. The PR **still needs teammate review** before the trial and handoff reflection are complete.
 
 ## 5. Individual contributions
 
-Guo HouYang directed the current proof of concept and planning draft with Codex assistance, checked the tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). This AI assistance must be disclosed in line with the course policy. Chen GuangYuan is assigned UI and usability review, Li Hao acceptance testing and category totals, and Shang JiaLe documentation, risk review, and the optional image experiment. These are future responsibilities, not completed contributions. The final version must replace this paragraph with verified activities and links for each member. If the work remains solely Guo's, the contribution record must say so.
+Guo HouYang directed the prototype and plan with Codex assistance, checked tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). This AI use requires disclosure under course policy. Chen GuangYuan is assigned UI and editing, Li Hao tests and category totals, and Shang JiaLe quality and process evaluation. These are planned roles; final statements must describe actual work with links.
 
 ## Evidence index
 
-The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) are available. The submission commit and teammate review remain pending. Ensure the assessor can access this private repository.
+The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) are linked. The review, submission commit, and assessor access remain pending.
 
 ## References
 
