@@ -15,5 +15,7 @@ This index is a checklist until the real GitHub links exist. Do not present an u
 
 Recommended workflow for the trial: open B1 as a GitHub Issue; create a short feature branch; implement or refine one B1 acceptance condition; open a Pull Request referring to the Issue; ask another member to review; run `npm test` in GitHub Actions; merge after review; record what changed in the workflow after the trial.
 
+For Assignment 2 continuity, the [iteration record template](iteration-record-template.md) names the requirement-to-test links, review timing, retrospective outcome, and quality scenario evidence to collect. The [Q1 quality scenario](https://github.com/Guo7753/student-budget-app/issues/7) is planned, not completed.
+
 Suggested reflection to complete only after the trial: describe one concrete friction point, such as an unclear acceptance criterion or a failed test, and the exact change made in response. Do not claim a review, check, or lesson before it occurs.
 
