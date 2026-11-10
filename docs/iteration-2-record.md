@@ -15,7 +15,7 @@ The Assignment 1 baseline planned category totals (B3), editing (B4), and a secu
 | Keep daily budget fixed when recording an expense | Passed: NZD 300 / 30 days = NZD 10; after recording NZD 12.50, daily budget stayed NZD 10 and daily remaining became -NZD 2.50 | `test/budget.test.js`; manual browser check on 10 November |
 | Ten categories with leading icons | Implemented in selector and record list | `src/budget.js`, `src/app.js`; category test |
 | Responsive desktop and narrow layout | Visually checked at desktop width and 390 px mobile width | Manual browser inspection on 10 November; screenshot evidence to preserve if required |
-| Automated tests | Twelve local tests passed on 10 November; the earlier dashboard commit passed GitHub Actions | `npm test`; [PR 9 dashboard run](https://github.com/Guo7753/student-budget-app/actions/runs/42820110758); check latest run after calculator/chart upload |
+| Automated tests | Twelve local tests passed on 10 November; the calculator and chart commit passed GitHub Actions | `npm test`; [PR 9 calculator and chart run](https://github.com/Guo7753/student-budget-app/actions/runs/42821911313) |
 
 ## B3 chart and B7 calculator addendum, 10 November
 
