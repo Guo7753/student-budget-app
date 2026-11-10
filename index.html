@@ -3,31 +3,102 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#133c3b">
   <title>Student Budget</title>
   <link rel="stylesheet" href="./styles.css">
   <script type="module" src="./src/app.js"></script>
 </head>
 <body>
-  <main>
-    <h1>Student Budget</h1>
-    <p>Record everyday expenses and see your monthly total. Data stays in this browser.</p>
-    <section aria-labelledby="add-title">
-      <h2 id="add-title">Add an expense</h2>
-      <form id="expense-form">
-        <label>Amount ($)<input name="amount" type="number" min="0.01" step="0.01" required></label>
-        <label>Date<input id="date" name="date" type="date" required></label>
-        <label>Category<select id="category" name="category" required></select></label>
-        <label>Note (optional)<input name="note" type="text" maxlength="100"></label>
-        <button type="submit">Save expense</button>
-      </form>
-      <p id="message" role="status" aria-live="polite"></p>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="brand-row">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">S</span><span>Student Budget</span></div>
+        <span class="privacy-pill">PRIVATE · THIS BROWSER</span>
+      </div>
+      <div class="hero-content">
+        <div>
+          <p class="eyebrow">YOUR SPENDING SPACE</p>
+          <h1>Your money, at a glance.</h1>
+          <p class="hero-copy">Track everyday costs and keep a clear view of what is left.</p>
+        </div>
+        <div class="view-controls" aria-label="Budget view date">
+          <label>Month to view<input id="month" type="month" required></label>
+          <label>Day to view<input id="day" type="date" required></label>
+        </div>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Budget overview">
+      <div class="metric-card balance-card">
+        <div class="metric-icon" aria-hidden="true">◉</div>
+        <p class="metric-label">Balance</p>
+        <strong id="balance" class="metric-value">—</strong>
+        <p class="metric-help">Starting balance minus all expenses</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon" aria-hidden="true">▣</div>
+        <p class="metric-label">Monthly remaining</p>
+        <strong id="monthly-remaining" class="metric-value">—</strong>
+        <p class="metric-help">Budget less this month's spending</p>
+      </div>
+      <div class="metric-card daily-budget-card">
+        <div class="metric-icon" aria-hidden="true">◷</div>
+        <p class="metric-label">Daily budget</p>
+        <strong id="daily-budget" class="metric-value">—</strong>
+        <p class="metric-help">Fixed for this month</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon" aria-hidden="true">↗</div>
+        <p class="metric-label">Daily remaining</p>
+        <strong id="daily-remaining" class="metric-value">—</strong>
+        <p class="metric-help">Daily budget less selected day's spending</p>
+      </div>
     </section>
-    <section aria-labelledby="history-title">
-      <h2 id="history-title">Monthly expenses</h2>
-      <label>Month<input id="month" type="month"></label>
-      <p class="total">Total: <strong id="total">$0.00</strong></p>
-      <ul id="expense-list"></ul>
+
+    <p id="daily-spent" class="daily-context"></p>
+
+    <div class="work-grid">
+      <section class="panel" aria-labelledby="add-title">
+        <div class="panel-heading">
+          <div><p class="section-kicker">RECORD</p><h2 id="add-title">Add an expense</h2></div>
+          <span class="panel-icon" aria-hidden="true">＋</span>
+        </div>
+        <form id="expense-form" class="form-grid">
+          <label>Amount (NZD)<input name="amount" type="number" min="0.01" max="100000000" step="0.01" placeholder="0.00" required></label>
+          <label>Date<input id="date" name="date" type="date" required></label>
+          <label>Category<select id="category" name="category" required></select></label>
+          <label>Note (optional)<input name="note" type="text" maxlength="100" placeholder="What was it for?"></label>
+          <button class="primary-button" type="submit">Save expense <span aria-hidden="true">→</span></button>
+        </form>
+        <p id="expense-message" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel settings-panel" aria-labelledby="budget-title">
+        <div class="panel-heading">
+          <div><p class="section-kicker">PLAN</p><h2 id="budget-title">Set your budget</h2></div>
+          <span class="panel-icon" aria-hidden="true">◎</span>
+        </div>
+        <p class="panel-description">Your daily budget is the monthly budget divided by the number of days in that month. Adding an expense changes only what remains.</p>
+        <form id="budget-form" class="budget-form">
+          <label>Starting balance (NZD)<input id="opening-balance" name="openingBalance" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 1200.00" required></label>
+          <p class="field-help">The balance before expenses recorded in this app.</p>
+          <label>Monthly budget for <span id="budget-month-label"></span> (NZD)<input id="monthly-budget" name="monthlyBudget" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 600.00" required></label>
+          <button class="secondary-button" type="submit">Save budget</button>
+        </form>
+        <p id="budget-message" class="status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="panel history-panel" aria-labelledby="history-title">
+      <div class="panel-heading history-heading">
+        <div><p class="section-kicker">HISTORY</p><h2 id="history-title">Monthly expenses</h2></div>
+        <span id="entry-count" class="entry-count">0 entries</span>
+      </div>
+      <div class="history-summary"><span>Spent this month</span><strong id="monthly-spent">$0.00</strong></div>
+      <ul id="expense-list" class="expense-list"></ul>
     </section>
+
+    <footer class="app-footer">Stored on this device. Clearing browser data removes your records.</footer>
   </main>
 </body>
 </html>
