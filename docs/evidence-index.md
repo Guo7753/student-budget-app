@@ -17,7 +17,7 @@ Recommended workflow for the trial: open B1 as a GitHub Issue; create a short fe
 
 For Assignment 2 continuity, the [iteration record template](iteration-record-template.md) names the requirement-to-test links, review timing, retrospective outcome, and quality scenario evidence to collect. The [Q1 quality scenario](https://github.com/Guo7753/student-budget-app/issues/7) is planned, not completed.
 
-The user-requested [B6 budget dashboard](https://github.com/Guo7753/student-budget-app/issues/8) is an Iteration 2 scope change proposed in [PR 9](https://github.com/Guo7753/student-budget-app/pull/9). Its implementation, tests, UI checks, limitations, and pending review are recorded in [Iteration 2 work in progress](iteration-2-record.md).
+The user-requested [B6 budget dashboard](https://github.com/Guo7753/student-budget-app/issues/8), [B3 category chart](https://github.com/Guo7753/student-budget-app/issues/4), and [B7 calculator](https://github.com/Guo7753/student-budget-app/issues/10) are Iteration 2 work proposed in [PR 9](https://github.com/Guo7753/student-budget-app/pull/9). Their implementation, tests, UI checks, limitations, and pending review are recorded in [Iteration 2 work in progress](iteration-2-record.md).
 
 Suggested reflection to complete only after the trial: describe one concrete friction point, such as an unclear acceptance criterion or a failed test, and the exact change made in response. Do not claim a review, check, or lesson before it occurs.
 
