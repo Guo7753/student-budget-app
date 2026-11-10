@@ -7,12 +7,24 @@ Project goal: help a university student record everyday expenses and understand 
 | [B1](https://github.com/Guo7753/student-budget-app/issues/1) | Must | As a student, I can save an expense with amount, date, category, and optional note. A valid entry appears after saving and after reload. Zero, negative, or missing amount cannot be saved. | Guo, with Chen reviewing interaction | 1 |
 | [B2](https://github.com/Guo7753/student-budget-app/issues/3) | Must | As a student, I can see expenses for a selected month and delete one. The deleted entry disappears and the total changes. | Guo, with Li testing | 1 |
 | [B3](https://github.com/Guo7753/student-budget-app/issues/4) | Must | As a student, I can see total spending by category for a month. Given known fixtures, each category sum and overall sum are exact to two decimals. | Li, with Guo integrating | 2 |
-| [B4](https://github.com/Guo7753/student-budget-app/issues/5) | Should | As a student, I can edit an incorrect record. After saving, both list and totals reflect the corrected values. | Chen, with Li testing | 2 |
+| [B4](https://github.com/Guo7753/student-budget-app/issues/5) | Must | As a student, I can edit an incorrect record. After saving, both list and totals reflect the corrected values. | Chen, with Li testing | 2 |
 | [B5](https://github.com/Guo7753/student-budget-app/issues/6) | Could | As a student, I can upload a sample receipt and see proposed date and amount. I can edit both, and nothing is saved until I confirm. If extraction fails, I can enter data manually. | Shang, with Guo reviewing | 2 stretch |
 
 Iteration 1 goal: a student can reliably enter, inspect, and delete expenses. Evaluation: B1 and B2 acceptance tests pass; one user completes the flow without help; a reviewed Pull Request and automated check are visible in GitHub.
 
-Iteration 2 goal: a student can interpret and correct monthly spending. Evaluation: B3 and B4 tests pass for a known fixture; at least one user checks the category summary. B5 begins only if the must-have work is done and the team has time to test error handling and privacy.
+Iteration 2 goal: a student can interpret and correct monthly spending. Evaluation: B3 and B4 tests pass for a known fixture; at least one user checks the category summary. Shang leads a reproducible security quality check using synthetic note inputs. B5 begins only if the must-have work is done and the team has time to test error handling and privacy.
+
+Process and quality measures planned for Assignment 2:
+
+| Measure | How to collect it in each iteration | Why it matters |
+| --- | --- | --- |
+| Traceability completeness | Count completed backlog items with linked Issue, PR, acceptance test, and CI result; divide by completed items | Shows whether a reviewer can follow each requirement to evidence |
+| Review turnaround | Hours from PR opening to first teammate review; record a missing review explicitly | Reveals coordination delay that a process change may address |
+| Review rework | Count review rounds and acceptance-criterion changes per PR | Helps interpret whether a faster review hid extra rework |
+
+At the Iteration 1 retrospective, use the actual evidence to choose one specific improvement for Iteration 2, such as scheduling a review window or adding an acceptance checklist to the PR template. Record the change before applying it. Compare the same measures in both iterations and explain differences in task size, reviewer availability, and number of PRs; small samples do not prove causation.
+
+Quality scenario for Iteration 2: [Q1](https://github.com/Guo7753/student-budget-app/issues/7) tests whether a note containing synthetic HTML such as `<b>test</b>` displays as literal text rather than markup. Shang records browser version, operating system, exact input, steps, screenshot or automated result, expected outcome, and observed outcome. This checks one relevant injection pathway, not overall application security. Use the [iteration record template](iteration-record-template.md) to preserve comparable evidence.
 
 Definition of done: acceptance criteria met, automated tests pass, another member reviews the change, README or user guidance is updated if behavior changes, and the change is merged through a Pull Request. The current local proof of concept has automated tests but does not yet meet the review requirement.
 
