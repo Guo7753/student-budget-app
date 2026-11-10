@@ -45,3 +45,7 @@ Copy this template once for each iteration. Record actual evidence, dates, and r
 
 For Iteration 2, compare the measures with Iteration 1, note differences in task size and reviewer availability, and state whether the process change helped. Do not infer causation from a very small sample.
 
+## Demonstration outline
+
+Plan approximately 10 minutes: problem and scope (1 minute), working user workflow (3), acceptance tests and quality scenario (2), iteration evidence and process change (2), limitations and next step (2). Reserve the separate question period for questions. Each member should explain their own actual technical or process contribution, supported by a link in the individual statement.
+
