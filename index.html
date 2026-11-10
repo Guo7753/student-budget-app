@@ -64,7 +64,21 @@
           <span class="panel-icon" aria-hidden="true">＋</span>
         </div>
         <form id="expense-form" class="form-grid">
-          <label>Amount (NZD)<input name="amount" type="number" min="0.01" max="100000000" step="0.01" placeholder="0.00" required></label>
+          <div class="amount-field">
+            <label for="amount">Amount (NZD)</label>
+            <div class="amount-input-wrap">
+              <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="12+3" required aria-describedby="amount-result">
+              <button id="calculator-toggle" class="calculator-toggle" type="button" aria-label="Open calculator" aria-expanded="false" aria-controls="calculator-pad">🧮</button>
+            </div>
+            <span id="amount-result" class="amount-result" aria-live="polite">Type a calculation or open the calculator.</span>
+            <div id="calculator-pad" class="calculator-pad" hidden>
+              <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button><button type="button" data-key="÷">÷</button>
+              <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button><button type="button" data-key="×">×</button>
+              <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button><button type="button" data-key="−">−</button>
+              <button type="button" data-key="C">C</button><button type="button" data-key="0">0</button><button type="button" data-key=".">.</button><button type="button" data-key="+">+</button>
+              <button type="button" data-key="⌫" class="key-wide">⌫</button><button type="button" data-key="=" class="key-wide key-equals">=</button>
+            </div>
+          </div>
           <label>Date<input id="date" name="date" type="date" required></label>
           <label>Category<select id="category" name="category" required></select></label>
           <label>Note (optional)<input name="note" type="text" maxlength="100" placeholder="What was it for?"></label>
@@ -88,6 +102,15 @@
         <p id="budget-message" class="status" role="status" aria-live="polite"></p>
       </section>
     </div>
+
+    <section class="panel chart-panel" aria-labelledby="chart-title">
+      <div class="panel-heading chart-heading">
+        <div><p class="section-kicker">INSIGHTS</p><h2 id="chart-title">Where your money went</h2></div>
+        <span id="chart-month" class="entry-count"></span>
+      </div>
+      <p class="panel-description">Spending by category for the selected month. The categories match the expense form.</p>
+      <ul id="category-chart" class="category-chart" aria-label="Monthly spending by category"></ul>
+    </section>
 
     <section class="panel history-panel" aria-labelledby="history-title">
       <div class="panel-heading history-heading">

@@ -1,4 +1,4 @@
-import { addExpense, removeExpense, budgetSummary, validateSettings, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+import { addExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -11,6 +11,11 @@ const monthInput = document.querySelector("#month");
 const dayInput = document.querySelector("#day");
 const openingInput = document.querySelector("#opening-balance");
 const budgetInput = document.querySelector("#monthly-budget");
+const amountInput = document.querySelector("#amount");
+const amountResult = document.querySelector("#amount-result");
+const calculatorPad = document.querySelector("#calculator-pad");
+const calculatorToggle = document.querySelector("#calculator-toggle");
+const chart = document.querySelector("#category-chart");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
@@ -62,6 +67,46 @@ function setMetric(id, value, configured) {
   const element = document.querySelector(`#${id}`);
   element.textContent = configured ? currency.format(value) : "—";
   element.closest(".metric-card").classList.toggle("negative", configured && value < 0);
+}
+
+function showAmountResult() {
+  const raw = amountInput.value.trim();
+  const value = calculateAmount(raw);
+  amountResult.textContent = !raw ? "Type a calculation or open the calculator."
+    : value === null ? "Enter a valid positive calculation."
+      : `= ${currency.format(value)}`;
+  amountResult.classList.toggle("invalid", Boolean(raw) && value === null);
+}
+
+function renderChart(month) {
+  const totals = categoryTotals(expenses, month);
+  const maximum = Math.max(...totals.map(({ amount }) => amount), 0);
+  chart.replaceChildren();
+  document.querySelector("#chart-month").textContent = month;
+  for (const { category, amount } of totals) {
+    const item = document.createElement("li");
+    item.className = "chart-item";
+    const heading = document.createElement("div");
+    heading.className = "chart-item-heading";
+    const name = document.createElement("span");
+    name.className = "chart-category";
+    const icon = document.createElement("span");
+    icon.className = "chart-icon";
+    icon.textContent = CATEGORY_ICONS[category];
+    icon.setAttribute("aria-hidden", "true");
+    name.append(icon, document.createTextNode(category));
+    const value = document.createElement("strong");
+    value.textContent = currency.format(amount);
+    heading.append(name, value);
+    const track = document.createElement("div");
+    track.className = "chart-track";
+    const bar = document.createElement("span");
+    bar.className = "chart-bar";
+    bar.style.width = `${maximum ? amount / maximum * 100 : 0}%`;
+    track.append(bar);
+    item.append(heading, track);
+    chart.append(item);
+  }
 }
 
 function render() {
@@ -118,7 +163,28 @@ function render() {
     list.append(empty);
   }
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
+  renderChart(month);
 }
+
+calculatorToggle.addEventListener("click", () => {
+  calculatorPad.hidden = !calculatorPad.hidden;
+  calculatorToggle.setAttribute("aria-expanded", String(!calculatorPad.hidden));
+  calculatorToggle.setAttribute("aria-label", calculatorPad.hidden ? "Open calculator" : "Close calculator");
+  if (!calculatorPad.hidden) amountInput.focus();
+});
+calculatorPad.addEventListener("click", (event) => {
+  const key = event.target.closest("button[data-key]")?.dataset.key;
+  if (!key) return;
+  if (key === "C") amountInput.value = "";
+  else if (key === "⌫") amountInput.value = amountInput.value.slice(0, -1);
+  else if (key === "=") {
+    const value = calculateAmount(amountInput.value);
+    if (value !== null) amountInput.value = value.toFixed(2);
+  } else amountInput.value += key;
+  showAmountResult();
+  amountInput.focus();
+});
+amountInput.addEventListener("input", showAmountResult);
 
 expenseForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -136,6 +202,7 @@ expenseForm.addEventListener("submit", (event) => {
   expenseMessage.textContent = "Expense saved.";
   expenseForm.elements.amount.value = "";
   expenseForm.elements.note.value = "";
+  showAmountResult();
   render();
 });
 
