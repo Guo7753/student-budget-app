@@ -10,16 +10,16 @@ The Assignment 1 baseline planned category totals (B3), editing (B4), and a secu
 
 | Acceptance criterion | Current result | Evidence |
 | --- | --- | --- |
-| Save starting balance and month-specific budget | Implemented in browser localStorage | Code in `src/app.js`; browser refresh check pending on GitHub branch |
+| Save starting balance and month-specific budget | Passed: saved values and expense remained after refreshing the local preview | Code in `src/app.js`; manual browser check on 10 November |
 | Show balance and monthly remaining | Implemented | `budgetSummary` test and browser check |
 | Keep daily budget fixed when recording an expense | Passed: NZD 300 / 30 days = NZD 10; after recording NZD 12.50, daily budget stayed NZD 10 and daily remaining became -NZD 2.50 | `test/budget.test.js`; manual browser check on 10 November |
 | Ten categories with leading icons | Implemented in selector and record list | `src/budget.js`, `src/app.js`; category test |
 | Responsive desktop and narrow layout | Visually checked at desktop width and 390 px mobile width | Manual browser inspection on 10 November; screenshot evidence to preserve if required |
-| Automated tests | Nine local tests passed on 10 November | `npm test`; GitHub Actions run link to add after upload |
+| Automated tests | Nine local tests passed on 10 November; GitHub Actions passed | `npm test`; [PR 9 Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42820110758) |
 
 ## Responsibilities and traceability
 
-Guo HouYang directed and implemented B6 with Codex assistance. No teammate review or other member's implementation is claimed here. Link the new PR and CI run after upload. The earlier [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) remains the unmerged base and still needs a genuine teammate review.
+Guo HouYang directed and implemented B6 with Codex assistance in [PR 9](https://github.com/Guo7753/student-budget-app/pull/9). No teammate review or other member's implementation is claimed here. The earlier [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) remains the unmerged base and still needs a genuine teammate review.
 
 ## Process and quality evidence still to collect
 
