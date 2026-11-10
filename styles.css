@@ -57,6 +57,19 @@ label { display: block; color: #344f49; font-size: .79rem; font-weight: 700; }
 input, select { display: block; width: 100%; height: 42px; margin-top: 6px; padding: 0 12px; border: 1px solid #d5e1dc; border-radius: 10px; background: #fbfdfc; color: #213e37; }
 input::placeholder { color: #a0afa9; }
 input:focus, select:focus { border-color: #57b38d; background: #fff; }
+.amount-field { min-width: 0; }
+.amount-input-wrap { position: relative; }
+.amount-input-wrap input { padding-right: 53px; font-variant-numeric: tabular-nums; }
+.calculator-toggle { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; width: 36px; height: 32px; border: 0; border-radius: 8px; color: #1e684f; background: #e5f3ea; font-size: 1.1rem; }
+.calculator-toggle:hover, .calculator-toggle[aria-expanded="true"] { background: #ccebd9; }
+.amount-result { display: block; min-height: 18px; margin-top: 5px; color: #36765c; font-size: .7rem; font-weight: 650; }
+.amount-result.invalid { color: #bb5147; }
+.calculator-pad:not([hidden]) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; padding: 8px; border: 1px solid #dbe9df; border-radius: 12px; background: #f4faf6; }
+.calculator-pad button { min-height: 33px; border: 1px solid #d9e8de; border-radius: 8px; color: #315348; background: #fff; font-size: .85rem; font-weight: 750; }
+.calculator-pad button:hover { background: #e4f2e8; }
+.calculator-pad .key-wide { grid-column: span 2; }
+.calculator-pad .key-equals { color: #fff; background: #1a7560; }
+.calculator-pad .key-equals:hover { background: #145c4b; }
 .primary-button, .secondary-button { height: 43px; padding: 0 18px; border: 0; border-radius: 10px; font-weight: 750; transition: transform .15s, filter .15s; }
 .primary-button:hover, .secondary-button:hover { transform: translateY(-1px); filter: brightness(1.04); }
 .primary-button { align-self: end; display: flex; align-items: center; justify-content: space-between; color: #fff; background: #1a7560; }
@@ -66,7 +79,18 @@ input:focus, select:focus { border-color: #57b38d; background: #fff; }
 .budget-form { display: grid; gap: 14px; }
 .field-help { margin: -10px 0 0; color: #8b9b95; font-size: .7rem; }
 
-.history-panel { margin-top: 18px; }
+.chart-panel, .history-panel { margin-top: 18px; }
+.chart-heading { align-items: center; margin-bottom: 10px; }
+.chart-panel .panel-description { margin: 0 0 18px; }
+.category-chart { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 30px; margin: 0; padding: 0; list-style: none; }
+.chart-item { min-width: 0; }
+.chart-item-heading, .chart-category { display: flex; align-items: center; }
+.chart-item-heading { justify-content: space-between; gap: 12px; margin-bottom: 7px; font-size: .79rem; }
+.chart-category { gap: 8px; min-width: 0; font-weight: 700; }
+.chart-icon { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 8px; background: #eef7f0; font-size: .86rem; }
+.chart-item-heading strong { flex: none; color: #315d4e; font-variant-numeric: tabular-nums; }
+.chart-track { height: 8px; overflow: hidden; border-radius: 999px; background: #eef3ef; }
+.chart-bar { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #47af86, #1b7560); transition: width .25s ease; }
 .history-heading { align-items: center; margin-bottom: 16px; }
 .entry-count { padding: 6px 11px; border-radius: 999px; color: #4d796b; background: #eef7f1; font-size: .73rem; font-weight: 750; }
 .history-summary { padding: 13px 17px; border: 1px solid #deeee5; border-radius: 12px; background: #f5faf7; color: #5f786d; font-size: .85rem; }
@@ -101,6 +125,7 @@ input:focus, select:focus { border-color: #57b38d; background: #fff; }
   .work-grid { margin-top: 18px; gap: 13px; }
   .panel { padding: 21px 18px; border-radius: 16px; }
   .form-grid { grid-template-columns: 1fr; }
+  .category-chart { grid-template-columns: 1fr; gap: 13px; }
   .expense-row { flex-wrap: wrap; }
   .expense-details { flex-basis: calc(100% - 65px); }
   .expense-amount { margin-left: 57px; }
