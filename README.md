@@ -12,9 +12,9 @@ Run `npm test` with Node.js 18 or later. This uses Node's built-in test runner a
 
 ## Scope
 
-The proof of concept supports manual expense entry, validation, ten icon-labelled categories, monthly listing and deletion, and a budget dashboard. Set a starting balance and a separate budget for each selected month. Balance is the starting balance minus **all** recorded expenses. Monthly remaining is that month's budget minus its expenses. Daily budget is the monthly budget divided by calendar days and rounded to cents; recording an expense does **not** change it. Daily remaining subtracts expenses for the selected day and can be negative. Settings and expenses persist in this browser only.
+The proof of concept supports manual expense entry, validation, ten icon-labelled categories, monthly listing and deletion, a category spending chart, and a budget dashboard. In the amount field, type a calculation such as `12+3`, or open the 🧮 keypad; the calculated amount is previewed and saved as NZD 15.00. The chart shows spending for all ten form categories in the selected month. Set a starting balance and a separate budget for each selected month. Balance is the starting balance minus **all** recorded expenses. Monthly remaining is that month's budget minus its expenses. Daily budget is the monthly budget divided by calendar days and rounded to cents; recording an expense does **not** change it. Daily remaining subtracts expenses for the selected day and can be negative. Settings and expenses persist in this browser only.
 
-Planned work includes category totals, editing existing records, and an optional receipt-assist experiment. Receipt extraction must always ask the user to confirm fields before saving. Income entry, bank integration, payment, shared accounts, and production handling of personal financial data are excluded. Without income entry, the starting balance must be adjusted manually if new money is added.
+Planned work includes editing existing records and an optional receipt-assist experiment. Receipt extraction must always ask the user to confirm fields before saving. Income entry, bank integration, payment, shared accounts, and production handling of personal financial data are excluded. Without income entry, the starting balance must be adjusted manually if new money is added.
 
 ## Project and evidence
 
