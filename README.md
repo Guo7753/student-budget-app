@@ -24,7 +24,7 @@ The proof of concept supports manual expense entry, validation, a monthly list a
 - [Contribution record](docs/contributions.md)
 - [Report source](docs/report.md)
 
-Before submission, add the real GitHub repository URL, an accessible submission commit or release, Issue and Pull Request links, a reviewer discussion, and the GitHub Actions result. The local files are not substitutes for those external records.
+The Assignment 1 prototype was merged through [reviewed PR 2](https://github.com/Guo7753/student-budget-app/pull/2); its [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [passing CI run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510), and [evidence index](docs/evidence-index.md) are linked. The expanded budget dashboard, calculator, and category chart remain in open [PR 9](https://github.com/Guo7753/student-budget-app/pull/9) for Assignment 2.
 
 ## Reuse and AI disclosure
 
