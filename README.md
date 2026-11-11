@@ -2,7 +2,7 @@
 
 > The working prototype is currently proposed in [Pull Request #2](https://github.com/Guo7753/student-budget-app/pull/2). Check out the `feature/expense-entry` branch before following the run instructions. This note can be removed after a reviewed merge.
 
-A small browser-based expense tracker proposed for the CISE software engineering group assessment. The topic still requires lecturer approval. This repository contains a working proof of concept and the Assignment 1 planning material; the two planned iterations continue into Assignment 2.
+A small browser-based expense tracker proposed for the CISE software engineering group assessment. The topic was confirmed with the lecturer in class; no written record is available. This repository contains a working proof of concept and the Assignment 1 planning material; the two planned iterations continue into Assignment 2.
 
 ## Run
 
