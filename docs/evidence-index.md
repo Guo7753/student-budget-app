@@ -11,7 +11,7 @@ This index separates completed Assignment 1 workflow evidence from items still a
 | Tracked trial requirement | [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) has acceptance criteria | Link available |
 | Reviewed change | [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) approved by Li Hao (`enzo10mi`) on 11 November and merged | PR conversation and review |
 | Test result | Five prototype tests passed in [GitHub Actions](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510); `npm start` served the app locally | Run link available |
-| Team contribution evidence | Guo implemented and planned; Li reviewed PR 2; Chen and Shang have no verified activity yet | [Contribution record](contributions.md) |
+| Team contribution evidence | Guo implemented and planned; Li reviewed PR 2; Chen (`cgy7711`) reviewed PR 9; Shang has no verified activity yet | [Contribution record](contributions.md) |
 
 The trial followed [B1](https://github.com/Guo7753/student-budget-app/issues/1) through branch implementation, automated testing, Li's review, and merge. Li raised negative-amount validation; the existing validation and test already covered it. The practical improvement for the next review is to point reviewers directly to each acceptance test in the PR description.
 
