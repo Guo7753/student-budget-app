@@ -24,11 +24,13 @@ A plan-driven approach would define features and design in detail before impleme
 | Two short iterations | Documentation may consume early time | A usable slice can be tested early |
 | Team coordination | Clear initial assignments | Frequent integration and review are needed |
 
+These studies inform a choice rather than predict our grade or delivery speed. Serrador and Pinto's projects span many settings, while this is a small browser prototype with a fixed coursework deadline; their observed association cannot establish that an agile label will improve our result. We therefore keep a short upfront scope, acceptance criteria, and risk plan, then use increments and reviews where user needs are uncertain. Requests for a budget dashboard and calculator illustrate the benefit of reordering work, but also show its cost: editing remains unfinished while optional receipt assistance is deferred. With stable requirements or formal approval gates, a plan-driven approach would make more of the design and verification sequence explicit before coding.
+
 We propose two short iterations with an ordered backlog, explicit acceptance criteria, a review at each iteration end, and a brief retrospective. This suits a small team and uncertain interface details. The first increment covers reliable manual records; the second adds spending insight and correction. A receipt experiment is attempted only after the core work meets its tests. We will use selected Scrum practices, such as a visible backlog and inspectable increments, without claiming a full Scrum implementation (Schwaber & Sutherland, 2020). For a regulated financial system, we would add stronger upfront security and compliance analysis, formal traceability, and more extensive verification before release. For a distributed team, we would rely more heavily on written decisions, small asynchronous reviews, and explicit handoff times.
 
 ## 3. Plan and design
 
-The backlog sets proposed owners and testable outcomes; role assignments are not completed contributions.
+The [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md) sets proposed owners and testable outcomes; role assignments are not completed contributions. The table is the original baseline; later B6/B7 requests are recorded as scope changes in the living backlog, with B4 editing still pending.
 
 | Item and proposed owner | Testable acceptance | Iteration |
 | --- | --- | --- |
