@@ -1,10 +1,10 @@
 # Student Budget: Investigation and Project Plan
 
-**CISE Assignment 1 | Group report | 11 November 2026**
+**CISE Assignment 1 | Group report | 12 November 2026**
 
 **Members:** Guo HouYang (team lead), Li Hao, Chen GuangYuan, Shang JiaLe  
 **Student IDs:** included in the Canvas-submitted PDF  
-**Project approval:** to be confirmed by the lecturer at assessment; no approval record yet  
+**Project approval:** topic confirmed with the lecturer in class; no written record  
 **Repository:** https://github.com/Guo7753/student-budget-app  
 **Submission commit:** identified in the Canvas-submitted PDF  
 
@@ -12,7 +12,7 @@
 
 University students often make many small purchases but lack a quick way to see where their money goes. Student Budget is a small browser application for recording expenses and viewing monthly spending. The main stakeholder is a student who wants a low-effort overview; the lecturer assesses the engineering process, and the four-member team must maintain and test the product. The project aims to make entry simple and calculations trustworthy, rather than to provide financial advice.
 
-The planned scope is manual expense entry, a monthly list, deletion or correction, and category totals. Receipt-image assistance is a stretch experiment: it may suggest fields, but the user must confirm before saving. Bank connections, payments, shared accounts, and production storage of sensitive financial data are excluded. The constraints are two short development iterations, a four-person team, a 1,500-word report, and the need to continue the same project in Assignment 2. Key engineering issues are changing user expectations about useful categories, integration and coordination across four contributors, and quality risks in calculations and image extraction. The topic must be approved before the plan is treated as final.
+The planned scope is manual expense entry, a monthly list, deletion or correction, and category totals. Receipt-image assistance is a stretch experiment: it may suggest fields, but the user must confirm before saving. Bank connections, payments, shared accounts, and production storage of sensitive financial data are excluded. The constraints are two short development iterations, a four-person team, a 1,500-word report, and the need to continue the same project in Assignment 2. Key engineering issues are changing user expectations about useful categories, integration and coordination across four contributors, and quality risks in calculations and image extraction. The lecturer confirmed the topic in class; the group has no written approval record.
 
 ## 2. Development approach
 
@@ -62,7 +62,7 @@ Guo HouYang directed the prototype and plan with Codex assistance, checked tests
 
 ## Evidence index
 
-The [public repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [reviewed PR 2](https://github.com/Guo7753/student-budget-app/pull/2), [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510), and fixed submission commit identified in the Canvas-submitted PDF are linked. Lecturer topic approval is still to be confirmed at assessment.
+The [public repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [reviewed PR 2](https://github.com/Guo7753/student-budget-app/pull/2), [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510), and fixed submission commit identified in the Canvas-submitted PDF are linked. The topic was confirmed with the lecturer in class; no written approval record is available.
 
 ## References
 
