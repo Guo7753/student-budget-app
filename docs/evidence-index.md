@@ -1,10 +1,10 @@
 # Assignment 1 evidence index
 
-This index separates completed Assignment 1 workflow evidence from items still awaiting confirmation.
+This index records the Assignment 1 workflow evidence and the group's reported classroom topic confirmation.
 
 | Required evidence | Current state | Link |
 | --- | --- | --- |
-| Lecturer topic approval | To be confirmed with lecturer at assessment, per group plan; no approval record yet | Add approval record when received |
+| Lecturer topic approval | Group reports that the lecturer confirmed the topic in class; no written record is available | Verbal confirmation reported by group |
 | Shared repository and assessor access | [Public repository](https://github.com/Guo7753/student-budget-app) accessible by link | Link available |
 | Reviewed prototype commit | [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) merged after review | [Merge commit](https://github.com/Guo7753/student-budget-app/commit/9fbdaa3a38cf746131b2192aefe90bbf20fcc8bf) |
 | Prioritised backlog | [Backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md) uploaded | Link available |
