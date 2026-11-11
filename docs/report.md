@@ -1,12 +1,12 @@
 # Student Budget: Investigation and Project Plan
 
-**CISE Assignment 1 | Group report draft | 10 November 2026**
+**CISE Assignment 1 | Group report | 11 November 2026**
 
-**Members:** Guo HouYang (team lead), Chen GuangYuan, Li Hao, Shang JiaLe  
-**Student IDs:** to be supplied by the group  
-**Project approval:** pending lecturer confirmation  
+**Members:** Guo HouYang (team lead), Li Hao, Chen GuangYuan, Shang JiaLe  
+**Student IDs:** included in the Canvas-submitted PDF  
+**Project approval:** to be confirmed by the lecturer at assessment; no approval record yet  
 **Repository:** https://github.com/Guo7753/student-budget-app  
-**Submission commit:** pending reviewed merge  
+**Submission commit:** identified in the Canvas-submitted PDF  
 
 ## 1. Project definition
 
@@ -52,15 +52,15 @@ flowchart LR
 
 ## 4. Collaborative workflow and trial
 
-The workflow is Issue, short branch, implementation and test, teammate PR review, CI, then merge. [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) tracks entry; [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) adds the prototype and five tests. The latest [Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) passed, and `npm start` served the app. Local work exposed that date parsing can normalize nonexistent dates, so a regression test now rejects them. The PR **still needs teammate review** before the trial and handoff reflection are complete.
+The workflow is Issue, short branch, implementation and test, teammate PR review, CI, then merge. [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) tracks entry; [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) adds the prototype and five tests. The [Actions run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) passed, and `npm start` served the app. Li Hao approved PR 2 on 11 November and raised negative-amount validation; the existing guard and test already covered it. The [reviewed change was merged](https://github.com/Guo7753/student-budget-app/commit/9fbdaa3a38cf746131b2192aefe90bbf20fcc8bf). Local work also exposed that date parsing can normalize nonexistent dates, so a regression test rejects them. The review showed that acceptance criteria and tests should be linked more explicitly for reviewers; we will add direct test pointers to the next PR description.
 
 ## 5. Individual contributions
 
-Guo HouYang directed the prototype and plan with Codex assistance, checked tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and submitted [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). This AI use requires disclosure under course policy. Chen GuangYuan is assigned UI and editing, Li Hao tests and category totals, and Shang JiaLe quality and process evaluation. These are planned roles; final statements must describe actual work with links.
+Guo HouYang directed the prototype and plan with Codex assistance, checked tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and implemented [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). Li Hao (`enzo10mi`) reviewed and approved that PR, highlighting negative-amount validation. Chen GuangYuan was assigned UI and editing, and Shang JiaLe quality and process evaluation, but no completed activity by them is verified for this submission. The group must follow course guidance on disclosing Codex assistance and on any individual contribution assessment.
 
 ## Evidence index
 
-The [repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), and [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510) are linked. The review, submission commit, and assessor access remain pending.
+The [public repository](https://github.com/Guo7753/student-budget-app), [backlog](https://github.com/Guo7753/student-budget-app/blob/main/docs/backlog.md), [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [reviewed PR 2](https://github.com/Guo7753/student-budget-app/pull/2), [passing check](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510), and fixed submission commit identified in the Canvas-submitted PDF are linked. Lecturer topic approval is still to be confirmed at assessment.
 
 ## References
 
