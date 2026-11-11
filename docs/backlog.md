@@ -1,6 +1,6 @@
 # Prioritised backlog and iteration plan
 
-Project goal: help a university student record everyday expenses and understand monthly spending with minimal setup. The lecturer must approve this topic before it becomes the group's official project.
+Project goal: help a university student record everyday expenses and understand monthly spending with minimal setup. The lecturer confirmed this topic in class; no written approval record is available.
 
 | ID | Priority | User story and acceptance criteria | Planned owner | Iteration |
 | --- | --- | --- | --- | --- |
