@@ -1,12 +1,12 @@
 # Contribution record
 
-The following assignments are proposed responsibilities, not claims of completed work. Replace the evidence column with real links and accurate descriptions before submission.
+This record distinguishes planned responsibilities from verified work. A planned role is not a completed contribution.
 
 | Member | Proposed responsibility | Current verified activity | Evidence to add |
 | --- | --- | --- | --- |
-| Guo HouYang (team lead) | Scope, backlog coordination, implementation and integration | Directed the proof of concept and planning draft; opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) and [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) | Add final merge commit |
+| Guo HouYang (team lead) | Scope, backlog coordination, implementation and integration | Directed the plan and prototype; opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) and [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), merged after review; implemented B6, B3, and B7 in open [PR 9](https://github.com/Guo7753/student-budget-app/pull/9) | [PR 2 merge commit](https://github.com/Guo7753/student-budget-app/commit/9fbdaa3a38cf746131b2192aefe90bbf20fcc8bf) |
 | Chen GuangYuan | UI and usability review; edit-record story | None recorded | Design comments, issue discussion, code or PR review |
-| Li Hao | Acceptance tests, category totals and CI check | None recorded | Test commit, test review or check analysis |
+| Li Hao | Acceptance tests, category totals and CI check | [Approved PR 2](https://github.com/Guo7753/student-budget-app/pull/2) on 11 November after examining the prototype and CI; raised negative-amount validation | PR review |
 | Shang JiaLe | Reproducible security quality scenario and process measurement; optional receipt experiment | None recorded | Quality-test procedure and result, retrospective or measurement record |
 
 The final group report must describe what each person actually did and link to the corresponding activity. A role title or commit count alone is insufficient. If one person performs all assessed work, state that accurately and seek course guidance about individual contribution assessment.
