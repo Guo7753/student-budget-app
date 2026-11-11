@@ -56,7 +56,7 @@ The workflow is Issue, short branch, implementation and test, teammate PR review
 
 ## 5. Individual contributions
 
-Guo HouYang directed the prototype and plan with Codex assistance, checked tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and implemented [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). Li Hao (`enzo10mi`) reviewed and approved that PR, highlighting negative-amount validation. Chen GuangYuan was assigned UI and editing, and Shang JiaLe quality and process evaluation, but no completed activity by them is verified for this submission. The group must follow course guidance on disclosing Codex assistance and on any individual contribution assessment.
+Guo HouYang directed the prototype and plan with Codex assistance, checked tests, opened [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), and implemented [PR 2](https://github.com/Guo7753/student-budget-app/pull/2). Li Hao (`enzo10mi`) reviewed and approved that PR, highlighting negative-amount validation. Chen GuangYuan (`cgy7711`) [reviewed PR 9](https://github.com/Guo7753/student-budget-app/pull/9#pullrequestreview-5860782141), commenting on the budget dashboard, category chart, calculator, and test coverage; PR 9 remains open as Assignment 2 work. Shang JiaLe was assigned quality and process evaluation, but no completed activity by him is verified for this submission. The group must follow course guidance on disclosing Codex assistance and on any individual contribution assessment.
 
 ## Evidence index
 
