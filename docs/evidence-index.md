@@ -11,9 +11,9 @@ This index separates completed Assignment 1 workflow evidence from items still a
 | Tracked trial requirement | [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1) has acceptance criteria | Link available |
 | Reviewed change | [PR 2](https://github.com/Guo7753/student-budget-app/pull/2) approved by Li Hao (`enzo10mi`) on 11 November and merged | PR conversation and review |
 | Test result | Five prototype tests passed in [GitHub Actions](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510); `npm start` served the app locally | Run link available |
-| Team contribution evidence | Guo implemented and planned; Li reviewed PR 2; Chen (`cgy7711`) reviewed PR 9; Shang has no verified activity yet | [Contribution record](contributions.md) |
+| Team contribution evidence | Guo implemented and planned; Li reviewed PR 2; Chen (`cgy7711`) reviewed PR 9; Shang (`33baby1`) measured review wait times and proposed a review window | [Contribution record](contributions.md) |
 
-The trial followed [B1](https://github.com/Guo7753/student-budget-app/issues/1) through branch implementation, automated testing, Li's review, and merge. Li raised negative-amount validation; the existing validation and test already covered it. The practical improvement for the next review is to point reviewers directly to each acceptance test in the PR description.
+The trial followed [B1](https://github.com/Guo7753/student-budget-app/issues/1) through branch implementation, automated testing, Li's review, and merge. Li raised negative-amount validation; the existing validation and test already covered it. Shang's [process measurement](https://github.com/Guo7753/student-budget-app/pull/9#issuecomment-6800260423) found about 125.4 hours to first review on PR 2 versus 26.1 hours on PR 9; repository timestamps do not establish the cause of the difference. The next PR should point reviewers to acceptance tests and agree on a 24-hour review window.
 
 For Assignment 2 continuity, the [iteration record template](iteration-record-template.md) names the requirement-to-test links, review timing, retrospective outcome, and quality scenario evidence to collect. The [Q1 quality scenario](https://github.com/Guo7753/student-budget-app/issues/7) is planned, not completed.
 
