@@ -1,4 +1,4 @@
-import { addExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -16,6 +16,8 @@ const amountResult = document.querySelector("#amount-result");
 const calculatorPad = document.querySelector("#calculator-pad");
 const calculatorToggle = document.querySelector("#calculator-toggle");
 const chart = document.querySelector("#category-chart");
+const expenseSubmit = document.querySelector("#expense-submit");
+const cancelEdit = document.querySelector("#cancel-edit");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
@@ -26,6 +28,7 @@ function localDate() {
 
 let expenses = [];
 let settings = { openingBalance: null, monthlyBudgets: {} };
+let editingExpenseId = null;
 try {
   const savedExpenses = JSON.parse(localStorage.getItem(expenseKey) || "[]");
   if (Array.isArray(savedExpenses)) expenses = savedExpenses;
@@ -143,6 +146,12 @@ function render() {
     const amount = document.createElement("strong");
     amount.className = "expense-amount";
     amount.textContent = currency.format(Number(expense.amount));
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "edit-button";
+    edit.textContent = "Edit";
+    edit.setAttribute("aria-label", `Edit ${expense.category} expense from ${expense.date}`);
+    edit.addEventListener("click", () => beginEditing(expense));
     const button = document.createElement("button");
     button.type = "button";
     button.className = "delete-button";
@@ -153,7 +162,7 @@ function render() {
       localStorage.setItem(expenseKey, JSON.stringify(expenses));
       render();
     });
-    item.append(icon, details, amount, button);
+    item.append(icon, details, amount, edit, button);
     list.append(item);
   }
   if (!visible.length) {
@@ -164,6 +173,32 @@ function render() {
   }
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
   renderChart(month);
+}
+
+function resetExpenseForm() {
+  editingExpenseId = null;
+  expenseForm.reset();
+  expenseForm.elements.date.value = dayInput.value;
+  expenseSubmit.innerHTML = "Save expense <span aria-hidden=\"true\">→</span>";
+  cancelEdit.hidden = true;
+  showAmountResult();
+}
+
+function beginEditing(expense) {
+  editingExpenseId = expense.id;
+  expenseForm.elements.amount.value = Number(expense.amount).toFixed(2);
+  expenseForm.elements.date.value = expense.date;
+  expenseForm.elements.category.value = expense.category;
+  expenseForm.elements.note.value = expense.note;
+  monthInput.value = expense.date.slice(0, 7);
+  dayInput.value = expense.date;
+  populateBudgetForm();
+  expenseSubmit.innerHTML = "Update expense <span aria-hidden=\"true\">→</span>";
+  cancelEdit.hidden = false;
+  expenseMessage.textContent = "Editing this expense. Save to replace the recorded details.";
+  showAmountResult();
+  expenseForm.elements.amount.focus();
+  render();
 }
 
 calculatorToggle.addEventListener("click", () => {
@@ -189,7 +224,9 @@ amountInput.addEventListener("input", showAmountResult);
 expenseForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const input = Object.fromEntries(new FormData(expenseForm));
-  const result = addExpense(expenses, input, crypto.randomUUID());
+  const result = editingExpenseId
+    ? updateExpense(expenses, editingExpenseId, input)
+    : addExpense(expenses, input, crypto.randomUUID());
   if (!result.valid) {
     expenseMessage.textContent = result.error;
     return;
@@ -199,11 +236,14 @@ expenseForm.addEventListener("submit", (event) => {
   monthInput.value = input.date.slice(0, 7);
   dayInput.value = input.date;
   populateBudgetForm();
-  expenseMessage.textContent = "Expense saved.";
-  expenseForm.elements.amount.value = "";
-  expenseForm.elements.note.value = "";
-  showAmountResult();
+  expenseMessage.textContent = editingExpenseId ? "Expense updated." : "Expense saved.";
+  resetExpenseForm();
   render();
+});
+
+cancelEdit.addEventListener("click", () => {
+  resetExpenseForm();
+  expenseMessage.textContent = "Editing cancelled.";
 });
 
 budgetForm.addEventListener("submit", (event) => {

@@ -130,6 +130,18 @@ export function addExpense(expenses, input, id) {
   return { valid: true, expenses: [...expenses, { id, ...result.value }] };
 }
 
+export function updateExpense(expenses, id, input) {
+  const result = validateExpense(input);
+  if (!result.valid) return result;
+  if (!expenses.some((expense) => expense.id === id)) {
+    return { valid: false, error: "Expense to edit was not found." };
+  }
+  return {
+    valid: true,
+    expenses: expenses.map((expense) => expense.id === id ? { id, ...result.value } : expense),
+  };
+}
+
 export function removeExpense(expenses, id) {
   return expenses.filter((expense) => expense.id !== id);
 }

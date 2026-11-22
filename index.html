@@ -82,7 +82,7 @@
           <label>Date<input id="date" name="date" type="date" required></label>
           <label>Category<select id="category" name="category" required></select></label>
           <label>Note (optional)<input name="note" type="text" maxlength="100" placeholder="What was it for?"></label>
-          <button class="primary-button" type="submit">Save expense <span aria-hidden="true">→</span></button>
+          <div class="expense-actions"><button id="expense-submit" class="primary-button" type="submit">Save expense <span aria-hidden="true">→</span></button><button id="cancel-edit" class="cancel-button" type="button" hidden>Cancel edit</button></div>
         </form>
         <p id="expense-message" class="status" role="status" aria-live="polite"></p>
       </section>

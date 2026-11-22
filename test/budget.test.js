@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  addExpense, removeExpense, totalForMonth, validateExpense,
+  addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
   validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS,
 } from "../src/budget.js";
 
@@ -41,6 +41,21 @@ test("rejects a calendar date that does not exist", () => {
 test("deleting an expense removes it", () => {
   const expenses = [{ id: "e1", ...sample }, { id: "e2", ...sample }];
   assert.deepEqual(removeExpense(expenses, "e1").map((x) => x.id), ["e2"]);
+});
+
+test("editing an expense preserves its id and recalculates its amount", () => {
+  const original = [{ id: "e1", ...sample }];
+  const result = updateExpense(original, "e1", { ...sample, amount: "12+3", category: "Transport", note: "Bus" });
+  assert.equal(result.valid, true);
+  assert.deepEqual(result.expenses, [{ id: "e1", amount: 15, date: "2026-11-06", category: "Transport", note: "Bus" }]);
+  assert.equal(totalForMonth(result.expenses, "2026-11"), 15);
+});
+
+test("editing rejects invalid data and an unknown expense id", () => {
+  const original = [{ id: "e1", ...sample }];
+  assert.equal(updateExpense(original, "e1", { ...sample, amount: "-3" }).valid, false);
+  assert.equal(updateExpense(original, "missing", sample).valid, false);
+  assert.deepEqual(original, [{ id: "e1", ...sample }]);
 });
 
 test("monthly total excludes other months", () => {
