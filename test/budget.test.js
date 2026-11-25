@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
-  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS,
+  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals,
+  CATEGORIES, CATEGORY_ICONS,
 } from "../src/budget.js";
 
 const sample = { amount: "12.50", date: "2026-11-06", category: "Food", note: "Lunch" };
@@ -107,4 +108,26 @@ test("adding an expense changes remaining amounts, not the daily budget", () => 
   assert.equal(after.dailyRemaining, -2.5);
   assert.equal(after.monthlyRemaining, 282.5);
   assert.equal(after.balance, 982.5);
+});
+
+test("daily totals add up each calendar day of the month", () => {
+  const expenses = [
+    { id: "a", amount: 10, date: "2026-11-02", category: "Food" },
+    { id: "b", amount: 2.5, date: "2026-11-02", category: "Food" },
+    { id: "c", amount: 5, date: "2026-11-05", category: "Study" },
+  ];
+  const totals = dailyTotals(expenses, "2026-11");
+  assert.equal(totals.length, 30);
+  assert.equal(totals[0].amount, 0);
+  assert.equal(totals[1].amount, 12.5);
+  assert.equal(totals[4].amount, 5);
+  assert.equal(totals.reduce((sum, item) => sum + item.amount, 0), 17.5);
+});
+
+test("daily totals ignore other months and respect month length", () => {
+  const expenses = [{ id: "a", amount: 10, date: "2026-10-02", category: "Food" }];
+  const february = dailyTotals(expenses, "2026-02");
+  assert.equal(february.length, 28);
+  assert.equal(february.reduce((sum, item) => sum + item.amount, 0), 0);
+  assert.deepEqual(dailyTotals(expenses, "not-a-month"), []);
 });

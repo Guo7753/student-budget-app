@@ -10,11 +10,13 @@ The current interface is functional but visually plain. The demonstration is ass
 
 1. **Layout and typography** - card-based sections, a consistent spacing scale, a readable type hierarchy, and aligned numeric values so amounts can be compared at a glance.
 2. **Budget feedback** - a monthly budget usage indicator and clearer separation between fixed daily budget, monthly remaining, and daily remaining.
-3. **Category insight** - a clearer chart presentation with the same ten categories used by the entry form, including an explicit empty state.
-4. **Entry workflow** - inline validation feedback, a visible calculation preview, a compact calculator affordance, and clear edit/cancel modes.
-5. **Responsiveness** - single-column layout on narrow screens, two-column layout on laptop widths.
-6. **Accessibility and interaction** - visible focus states, keyboard support for the calculator, accessible labels, and reduced reliance on colour alone.
-7. **Empty and loading states** - guided first-use messages instead of blank panels.
+3. **Daily spending trend** - a line and area chart of spending per calendar day for the selected month, with the total, the average per day, the highest day, and a dashed reference line for the fixed daily budget.
+4. **English month selector** - the month to view is a labelled list of month names instead of the browser's locale-dependent month control, so the interface reads the same on every machine used for the demonstration.
+5. **Category insight** - a clearer chart presentation with the same ten categories used by the entry form, including an explicit empty state.
+6. **Entry workflow** - inline validation feedback, a visible calculation preview, a compact calculator affordance, and clear edit/cancel modes.
+7. **Responsiveness** - single-column layout on narrow screens, two-column layout on laptop widths.
+8. **Accessibility and interaction** - visible focus states, keyboard support for the calculator, accessible labels, and reduced reliance on colour alone.
+9. **Empty and loading states** - guided first-use messages instead of blank panels.
 
 ## Constraints
 

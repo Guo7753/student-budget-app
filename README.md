@@ -10,10 +10,11 @@ A small browser-based expense tracker built for the CISE group assessment. The t
 - Accepts a calculation in the amount field, such as `12+3`, or a calculator keypad; the result is previewed before saving.
 - Shows the selected month's expenses and deletes or edits a stored record (editing keeps the same record identifier).
 - Summarises spending with ten icon-labelled categories and a category spending chart for the selected month.
+- Plots a daily spending trend for the selected month, with the total spent, the average per day, the highest day, and a dashed line for the fixed daily budget.
 - Keeps a starting balance and a month-specific budget, with a budget usage indicator.
 - Derives a fixed daily budget from the monthly budget and the calendar days in the month. Recording an expense changes the remaining amounts, not the daily budget.
 
-Data is stored in this browser's `localStorage` only.
+The month selector and all labels are in English. Data is stored in this browser's `localStorage` only.
 
 ## Run
 
@@ -31,7 +32,7 @@ Open <http://127.0.0.1:8000>. No package download is required.
 npm test
 ```
 
-This uses Node's built-in test runner; 14 tests cover validation, deletion, editing, calculator parsing, category totals, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
+This uses Node's built-in test runner; 16 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
 
 ## Project and evidence
 

@@ -63,6 +63,23 @@ export function categoryTotals(expenses, month) {
   return CATEGORIES.map((category) => ({ category, amount: totals[category] / 100 }));
 }
 
+export function dailyTotals(expenses, month) {
+  const days = daysInMonth(month);
+  if (!days) return [];
+  const totals = Array.from({ length: days }, (_, index) => ({
+    day: `${month}-${String(index + 1).padStart(2, "0")}`,
+    amount: 0,
+  }));
+  for (const expense of expenses) {
+    if (!expense.date.startsWith(month)) continue;
+    const dayNumber = Number(expense.date.slice(8, 10));
+    const bucket = totals[dayNumber - 1];
+    if (!bucket) continue;
+    bucket.amount += cents(expense.amount);
+  }
+  return totals.map(({ day, amount }) => ({ day, amount: amount / 100 }));
+}
+
 export function validateSettings(input) {
   for (const [field, label] of [["openingBalance", "Starting balance"], ["monthlyBudget", "Monthly budget"]]) {
     const raw = String(input[field] ?? "").trim();

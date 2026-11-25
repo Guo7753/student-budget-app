@@ -1,4 +1,4 @@
-import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -23,12 +23,38 @@ const usageBar = document.querySelector("#usage-bar");
 const usagePercent = document.querySelector("#usage-percent");
 const usageCaption = document.querySelector("#usage-caption");
 const usageBudget = document.querySelector("#usage-budget");
+const trendChart = document.querySelector("#trend-chart");
+const trendStats = document.querySelector("#trend-stats");
+const trendMonth = document.querySelector("#trend-month");
+const trendDesc = document.querySelector("#trend-desc");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
   const today = new Date();
   const part = (number) => String(number).padStart(2, "0");
   return `${today.getFullYear()}-${part(today.getMonth() + 1)}-${part(today.getDate())}`;
+}
+
+function monthLabel(month) {
+  const [year, monthNumber] = month.split("-").map(Number);
+  if (!year || !monthNumber) return month;
+  return new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("en-NZ", {
+    month: "long", year: "numeric", timeZone: "UTC",
+  });
+}
+
+function monthShort(month) {
+  const [year, monthNumber] = month.split("-").map(Number);
+  if (!year || !monthNumber) return month;
+  return new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("en-NZ", {
+    month: "short", year: "numeric", timeZone: "UTC",
+  });
+}
+
+function dayLabel(day) {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-NZ", {
+    day: "numeric", month: "short", timeZone: "UTC",
+  });
 }
 
 let expenses = [];
@@ -49,6 +75,7 @@ try {
 }
 
 const today = localDate();
+populateMonthOptions();
 document.querySelector("#date").value = today;
 monthInput.value = today.slice(0, 7);
 dayInput.value = today;
@@ -65,10 +92,146 @@ function currentBudget() {
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
+function populateMonthOptions() {
+  const months = new Set(expenses.map((expense) => expense.date.slice(0, 7)));
+  months.add(today.slice(0, 7));
+  if (dayInput.value) months.add(dayInput.value.slice(0, 7));
+  if (monthInput.value) months.add(monthInput.value);
+  const selected = monthInput.value;
+  monthInput.replaceChildren();
+  for (const month of [...months].sort()) {
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = monthLabel(month);
+    monthInput.append(option);
+  }
+  if (selected && months.has(selected)) monthInput.value = selected;
+}
+
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+function svgElement(name, attributes = {}) {
+  const element = document.createElementNS(SVG_NAMESPACE, name);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
+  return element;
+}
+
+function niceCeiling(value) {
+  if (!Number.isFinite(value) || value <= 0) return 1;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+  for (const step of [1, 2, 2.5, 5, 10]) {
+    if (step * magnitude >= value) return step * magnitude;
+  }
+  return 10 * magnitude;
+}
+
+function renderTrend(month) {
+  const totals = dailyTotals(expenses, month);
+  const days = totals.length;
+  const monthSpent = totals.reduce((sum, item) => sum + item.amount, 0);
+  const daysWithSpending = totals.filter((item) => item.amount > 0).length;
+  const highest = totals.reduce((best, item) => (item.amount > best.amount ? item : best), { day: `${month}-01`, amount: 0 });
+  const elapsedDays = month === today.slice(0, 7) ? Math.min(Number(today.slice(8, 10)), days) : days;
+  const budget = currentBudget();
+  const dailyBudget = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value).dailyBudget;
+
+  trendMonth.textContent = monthShort(month);
+  trendStats.replaceChildren();
+  const stats = [
+    ["Spent this month", currency.format(monthSpent)],
+    ["Average per day", currency.format(elapsedDays ? monthSpent / elapsedDays : 0)],
+    ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
+    ["Days with spending", days ? `${daysWithSpending} of ${elapsedDays}` : "—"],
+  ];
+  for (const [label, value] of stats) {
+    const item = document.createElement("div");
+    item.className = "trend-stat";
+    const title = document.createElement("span");
+    title.textContent = label;
+    const figure = document.createElement("strong");
+    figure.textContent = value;
+    item.append(title, figure);
+    trendStats.append(item);
+  }
+
+  trendChart.replaceChildren();
+  if (!days) {
+    trendChart.setAttribute("viewBox", "0 0 760 200");
+    trendChart.setAttribute("aria-label", "No daily spending data for this month");
+    trendDesc.textContent = "Choose a valid month to see the daily spending trend.";
+    return;
+  }
+
+  const width = 760;
+  const height = 230;
+  const padding = { top: 16, right: 14, bottom: 26, left: 46 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const maximum = Math.max(...totals.map((item) => item.amount), budget !== null ? dailyBudget : 0, 1);
+  const step = niceCeiling(maximum / 4);
+  const intervals = Math.max(Math.ceil(maximum / step), 1);
+  const yMaximum = step * intervals;
+  const xAt = (index) => padding.left + (days === 1 ? plotWidth / 2 : (index / (days - 1)) * plotWidth);
+  const yAt = (value) => padding.top + plotHeight - Math.min(value / yMaximum, 1) * plotHeight;
+
+  for (let tick = 0; tick <= intervals; tick += 1) {
+    const value = step * tick;
+    const lineY = yAt(value);
+    trendChart.append(svgElement("line", {
+      x1: padding.left, x2: width - padding.right, y1: lineY, y2: lineY,
+      class: tick === 0 ? "trend-axis-line" : "trend-grid",
+    }));
+    const label = svgElement("text", { x: padding.left - 8, y: lineY + 3.5, class: "trend-y-label", "text-anchor": "end" });
+    label.textContent = `$${Number.isInteger(value) ? value : value.toFixed(2)}`;
+    trendChart.append(label);
+  }
+
+  if (budget !== null && dailyBudget > 0 && dailyBudget <= yMaximum) {
+    const budgetY = yAt(dailyBudget);
+    trendChart.append(svgElement("line", {
+      x1: padding.left, x2: width - padding.right, y1: budgetY, y2: budgetY, class: "trend-budget-line",
+    }));
+    const budgetLabel = svgElement("text", {
+      x: width - padding.right, y: budgetY - 6, class: "trend-budget-label", "text-anchor": "end",
+    });
+    budgetLabel.textContent = `Daily budget ${currency.format(dailyBudget)}`;
+    trendChart.append(budgetLabel);
+  }
+
+  const points = totals.map((item, index) => [xAt(index), yAt(item.amount)]);
+  const areaPath = `M ${points[0][0]},${yAt(0)} L ${points.map(([x, y]) => `${x},${y}`).join(" L ")} L ${points[points.length - 1][0]},${yAt(0)} Z`;
+  trendChart.append(svgElement("path", { d: areaPath, class: "trend-area" }));
+  trendChart.append(svgElement("polyline", {
+    points: points.map(([x, y]) => `${x},${y}`).join(" "),
+    class: "trend-line",
+  }));
+
+  for (const [index, item] of totals.entries()) {
+    if (!item.amount) continue;
+    const dot = svgElement("circle", { cx: xAt(index), cy: yAt(item.amount), r: 3.4, class: "trend-dot" });
+    const title = svgElement("title");
+    title.textContent = `${dayLabel(item.day)} · ${currency.format(item.amount)}`;
+    dot.append(title);
+    trendChart.append(dot);
+  }
+
+  const labelDays = [1, 5, 10, 15, 20, 25, days].filter((dayNumber, index, list) => dayNumber <= days && list.indexOf(dayNumber) === index);
+  for (const dayNumber of labelDays) {
+    const label = svgElement("text", { x: xAt(dayNumber - 1), y: height - 6, class: "trend-x-label", "text-anchor": "middle" });
+    label.textContent = String(dayNumber);
+    trendChart.append(label);
+  }
+
+  trendChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  trendChart.setAttribute("aria-label", `${monthShort(month)} daily spending: total ${currency.format(monthSpent)}, highest day ${currency.format(highest.amount)} on ${dayLabel(highest.day)}, ${daysWithSpending} days with spending.`);
+  trendDesc.textContent = budget === null
+    ? `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. Set a monthly budget to compare each day with the daily allowance.`
+    : `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. The dashed line is the fixed daily budget of ${currency.format(dailyBudget)}.`;
+}
+
 function populateBudgetForm() {
   openingInput.value = settings.openingBalance ?? "";
   budgetInput.value = currentBudget() ?? "";
-  document.querySelector("#budget-month-label").textContent = monthInput.value;
+  document.querySelector("#budget-month-label").textContent = monthLabel(monthInput.value);
 }
 
 function setMetric(id, value, configured) {
@@ -91,7 +254,7 @@ function renderChart(month) {
   const maximum = Math.max(...totals.map(({ amount }) => amount), 0);
   const monthTotal = totals.reduce((sum, { amount }) => sum + amount, 0);
   chart.replaceChildren();
-  document.querySelector("#chart-month").textContent = month;
+  document.querySelector("#chart-month").textContent = monthShort(month);
   if (!maximum) {
     const empty = document.createElement("li");
     empty.className = "chart-empty";
@@ -226,6 +389,7 @@ function render() {
   }
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
   renderChart(month);
+  renderTrend(month);
 }
 
 function resetExpenseForm() {
@@ -243,6 +407,7 @@ function beginEditing(expense) {
   expenseForm.elements.date.value = expense.date;
   expenseForm.elements.category.value = expense.category;
   expenseForm.elements.note.value = expense.note;
+  populateMonthOptions();
   monthInput.value = expense.date.slice(0, 7);
   dayInput.value = expense.date;
   populateBudgetForm();
@@ -286,6 +451,7 @@ expenseForm.addEventListener("submit", (event) => {
   }
   expenses = result.expenses;
   localStorage.setItem(expenseKey, JSON.stringify(expenses));
+  populateMonthOptions();
   monthInput.value = input.date.slice(0, 7);
   dayInput.value = input.date;
   populateBudgetForm();
@@ -320,6 +486,7 @@ monthInput.addEventListener("change", () => {
 });
 dayInput.addEventListener("change", () => {
   if (dayInput.value.slice(0, 7) !== monthInput.value) {
+    populateMonthOptions();
     monthInput.value = dayInput.value.slice(0, 7);
     populateBudgetForm();
   }

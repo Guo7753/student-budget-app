@@ -35,7 +35,7 @@
         <div class="view-controls" aria-label="Choose the month and day to view">
           <label class="control">
             <span>Month to view</span>
-            <input id="month" type="month" required>
+            <select id="month" required></select>
           </label>
           <label class="control">
             <span>Day to view</span>
@@ -106,6 +106,21 @@
           <span>Budget <strong id="usage-budget">—</strong></span>
           <span id="daily-spent" class="usage-note"></span>
         </div>
+      </section>
+
+      <section class="panel trend-panel" aria-labelledby="trend-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Daily spending</p>
+            <h2 id="trend-title">How much you spent each day</h2>
+          </div>
+          <span id="trend-month" class="chip"></span>
+        </div>
+        <div id="trend-stats" class="trend-stats"></div>
+        <div class="trend-chart-wrap">
+          <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
+        </div>
+        <p id="trend-desc" class="trend-note"></p>
       </section>
 
       <div class="work-grid">
