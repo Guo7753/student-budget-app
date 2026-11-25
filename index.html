@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -144,7 +144,7 @@
           </div>
           <div class="usage-legend">
             <span>Spent <strong id="monthly-spent">$0.00</strong></span>
-            <span>Budget <strong id="usage-budget">—</strong></span>
+            <span><span id="usage-budget-label">Budget</span> <strong id="usage-budget">—</strong></span>
             <span id="daily-spent" class="usage-note"></span>
           </div>
           <button id="usage-toggle" class="usage-toggle" type="button" aria-expanded="false" aria-controls="usage-detail">Show budget breakdown</button>
@@ -178,11 +178,11 @@
               <p id="preset-message" class="status" role="status" aria-live="polite"></p>
             </div>
 
-            <div class="mode-switch" role="group" aria-label="Entry type">
-              <span class="mode-slider" aria-hidden="true"></span>
-              <button type="button" class="mode-button is-active" data-mode="expense" aria-pressed="true">Expense</button>
-              <button type="button" class="mode-button" data-mode="income" aria-pressed="false">Income</button>
-            </div>
+            <button id="type-switch" class="type-switch" type="button" role="switch" aria-checked="false" aria-label="Entry type: expense or income">
+              <span class="type-switch-knob" aria-hidden="true"></span>
+              <span class="type-switch-label type-switch-label--left" aria-hidden="true">Income</span>
+              <span class="type-switch-label type-switch-label--right" aria-hidden="true">Expense</span>
+            </button>
 
             <form id="expense-form" class="form-grid">
               <div class="amount-field">
@@ -231,7 +231,10 @@
               <p class="field-help">Money you already have before the expenses recorded here.</p>
               <label>Monthly budget (NZD)<input id="monthly-budget" name="monthlyBudget" type="number" min="0" max="100000000" step="0.01" required></label>
               <p class="field-help">Applies to <span id="budget-month-label"></span>. The daily budget is derived from it.</p>
-              <button class="secondary-button" type="submit">Save budget</button>
+              <div class="budget-actions">
+                <button class="secondary-button" type="submit">Save budget</button>
+                <button id="budget-clear" class="clear-button" type="button">Clear budget</button>
+              </div>
             </form>
             <p id="budget-message" class="status" role="status" aria-live="polite"></p>
           </section>

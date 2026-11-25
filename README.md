@@ -17,10 +17,11 @@ The same form switches between expenses and income:
 
 ## What the application does
 
-- Records expenses and income through one form with an **Expense / Income** switch; the form changes colour and category list with the selected type.
+- Records expenses and income through one form with an **Expense / Income switch** (a sliding pill switch). Switching changes the page tint, the form colour, the category list, and the four summary cards: in income mode the cards become *Balance*, *Income this month*, *Average daily income* and *Income on this day*, and the monthly bar shows how much of this month's income has been spent.
 - **Income adds to the balance only.** It never changes the monthly budget, the daily budget or the spending charts.
 - Records an expense with an amount, date, category, and optional note.
-- Saves repeat purchases as **quick adds** (for example a usual lunch). Choosing a saved quick add **loads it into the form** so it can be adjusted before saving; quick adds are kept in a collapsible list.
+- Saves repeat purchases as **quick adds** (for example a usual lunch). Quick adds are grouped into expense and income lists, sorted by amount, collapsed until opened, and **load into the form** so they can be adjusted before saving.
+- Clears a month's budget with one button, leaving the starting balance untouched.
 - Accepts a calculation in the amount field, such as `12+3`, or a calculator keypad; the result is previewed before saving.
 - Shows the selected month's records and deletes or edits a stored record (editing keeps the same record identifier). The list shows the most recent ten entries with a control to expand the rest.
 - Summarises spending with ten icon-labelled categories and a category-share donut chart, and summarises income with six income categories and its own donut chart.

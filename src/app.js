@@ -1,4 +1,4 @@
-﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
+import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -44,6 +44,17 @@ const usageDetail = document.querySelector("#usage-detail");
 const paceMonth = document.querySelector("#pace-month");
 const paceBody = document.querySelector("#pace-body");
 const modeSwitch = document.querySelector(".mode-switch");
+const typeSwitch = document.querySelector("#type-switch");
+const budgetClear = document.querySelector("#budget-clear");
+const usageTitle = document.querySelector("#usage-title");
+const usageBudgetLabel = document.querySelector("#usage-budget-label");
+const historyTitle = document.querySelector("#history-title");
+const metricCards = {
+  balance: document.querySelector('[data-panel="balance"]'),
+  remaining: document.querySelector('[data-panel="remaining"]'),
+  "daily-budget": document.querySelector('[data-panel="daily-budget"]'),
+  "daily-remaining": document.querySelector('[data-panel="daily-remaining"]'),
+};
 const addTitle = document.querySelector("#add-title");
 const incomeChartWrap = document.querySelector("#income-chart");
 const incomeLegend = document.querySelector("#income-legend");
@@ -139,12 +150,8 @@ function setFormMode(mode) {
   formMode = mode === "income" ? "income" : "expense";
   const isIncomeMode = formMode === "income";
   populateCategories();
-  for (const button of modeSwitch.querySelectorAll(".mode-button")) {
-    const active = button.dataset.mode === formMode;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  }
-  modeSwitch.classList.toggle("is-income", isIncomeMode);
+  typeSwitch.setAttribute("aria-checked", String(isIncomeMode));
+  typeSwitch.classList.toggle("is-income", isIncomeMode);
   const panel = expenseForm.closest(".panel");
   panel.classList.toggle("is-income-mode", isIncomeMode);
   addTitle.textContent = isIncomeMode ? "Add income" : "Add an expense";
@@ -153,12 +160,45 @@ function setFormMode(mode) {
       ? 'Save income<span aria-hidden="true">→</span>'
       : 'Save expense<span aria-hidden="true">→</span>';
   }
+  document.body.classList.toggle("theme-income", isIncomeMode);
+  applyPageMode();
+  render();
 }
 
-for (const button of modeSwitch.querySelectorAll(".mode-button")) {
-  button.addEventListener("click", () => setFormMode(button.dataset.mode));
-}
+typeSwitch.addEventListener("click", () => {
+  setFormMode(formMode === "income" ? "expense" : "income");
+});
 populateCategories();
+
+const CARD_COPY = {
+  expense: {
+    balance: ["Balance", "Starting balance + income − all spending"],
+    remaining: ["Monthly remaining", "This month's budget less spending"],
+    "daily-budget": ["Daily budget", "Fixed for the selected month"],
+    "daily-remaining": ["Daily remaining", "Daily budget less the selected day's spending"],
+  },
+  income: {
+    balance: ["Balance", "Starting balance + income − all spending"],
+    remaining: ["Income this month", "Salary, scholarship and other income"],
+    "daily-budget": ["Average daily income", "Income spread over the days so far"],
+    "daily-remaining": ["Income on this day", "Income recorded on the selected day"],
+  },
+};
+
+function applyPageMode() {
+  const isIncomeMode = formMode === "income";
+  for (const [key, card] of Object.entries(metricCards)) {
+    const [label, help] = CARD_COPY[isIncomeMode ? "income" : "expense"][key];
+    card.querySelector(".metric-label").textContent = label;
+    card.querySelector(".metric-help").textContent = help;
+  }
+  usageTitle.textContent = isIncomeMode
+    ? "How much of this month's income has been spent"
+    : "How much of this month's budget is used";
+  usageBudgetLabel.textContent = isIncomeMode ? "Income" : "Budget";
+  historyTitle.textContent = isIncomeMode ? "Monthly income" : "Monthly expenses";
+  closePanels();
+}
 
 function currentBudget() {
   const value = settings.monthlyBudgets[monthInput.value];
@@ -417,10 +457,19 @@ let openPanel = null;
 let calendarDay = null;
 
 const PANEL_CONFIG = {
-  balance: { kicker: "Balance", title: () => `How the balance changed in ${monthLabel(monthInput.value)}` },
-  remaining: { kicker: "Monthly remaining", title: () => `Budget pace for ${monthLabel(monthInput.value)}` },
-  "daily-budget": { kicker: "Daily budget", title: () => "How the daily budget is calculated" },
-  "daily-remaining": { kicker: "Daily remaining", title: () => `Spending on ${dayLabel(dayInput.value)}` },
+  balance: { kicker: () => "Balance", title: () => `How the balance changed in ${monthLabel(monthInput.value)}` },
+  remaining: {
+    kicker: () => (formMode === "income" ? "Income" : "Monthly remaining"),
+    title: () => (formMode === "income" ? `Income in ${monthLabel(monthInput.value)}` : `Budget pace for ${monthLabel(monthInput.value)}`),
+  },
+  "daily-budget": {
+    kicker: () => (formMode === "income" ? "Average daily income" : "Daily budget"),
+    title: () => (formMode === "income" ? "Income spread across the days so far" : "How the daily budget is calculated"),
+  },
+  "daily-remaining": {
+    kicker: () => (formMode === "income" ? "Income on this day" : "Daily remaining"),
+    title: () => `${formMode === "income" ? "Income on" : "Spending on"} ${dayLabel(dayInput.value)}`,
+  },
 };
 
 function closePanels() {
@@ -460,7 +509,7 @@ function renderOpenPanel() {
   const heading = document.createElement("div");
   const kicker = document.createElement("p");
   kicker.className = "section-kicker";
-  kicker.textContent = config.kicker;
+  kicker.textContent = typeof config.kicker === "function" ? config.kicker() : config.kicker;
   const title = document.createElement("h3");
   title.textContent = config.title();
   heading.append(kicker, title);
@@ -500,42 +549,6 @@ function statRow(tiles) {
   return row;
 }
 
-function expenseItem(expense) {
-  const item = document.createElement("li");
-  item.className = "detail-expense";
-  const icon = document.createElement("span");
-  icon.className = "detail-expense-icon";
-  icon.textContent = CATEGORY_ICONS[expense.category] ?? CATEGORY_ICONS.Other;
-  icon.setAttribute("aria-hidden", "true");
-  const details = document.createElement("span");
-  details.className = "detail-expense-details";
-  const name = document.createElement("strong");
-  name.textContent = expense.category;
-  const note = document.createElement("span");
-  note.textContent = expense.note || "No note";
-  details.append(name, note);
-  const amount = document.createElement("strong");
-  amount.className = "detail-expense-amount";
-  amount.textContent = currency.format(Number(expense.amount));
-  item.append(icon, details, amount);
-  return item;
-}
-
-function expenseListFor(day) {
-  const list = expenses
-    .filter((expense) => expense.date === day)
-    .sort((a, b) => Number(b.amount) - Number(a.amount));
-  if (!list.length) {
-    const empty = document.createElement("p");
-    empty.className = "detail-empty-inline";
-    empty.textContent = "No expenses recorded on this day.";
-    return empty;
-  }
-  const ul = document.createElement("ul");
-  ul.className = "detail-expense-list";
-  ul.append(...list.map(expenseItem));
-  return ul;
-}
 
 function shortMoney(value) {
   const rounded = Math.round(Number(value) * 100) / 100;
@@ -606,6 +619,123 @@ function lineChart(points, options = {}) {
   return svg;
 }
 
+function expenseItem(entry) {
+  const income = isIncome(entry);
+  const item = document.createElement("li");
+  item.className = "detail-expense";
+  if (income) item.classList.add("is-income");
+  const icon = document.createElement("span");
+  icon.className = "detail-expense-icon";
+  icon.textContent = income
+    ? (INCOME_ICONS[entry.category] ?? "➕")
+    : (CATEGORY_ICONS[entry.category] ?? CATEGORY_ICONS.Other);
+  icon.setAttribute("aria-hidden", "true");
+  const details = document.createElement("span");
+  details.className = "detail-expense-details";
+  const name = document.createElement("strong");
+  name.textContent = entry.category;
+  const note = document.createElement("span");
+  note.textContent = entry.note || "No note";
+  details.append(name, note);
+  const amount = document.createElement("strong");
+  amount.className = "detail-expense-amount";
+  amount.textContent = income ? `+${currency.format(Number(entry.amount))}` : currency.format(Number(entry.amount));
+  item.append(icon, details, amount);
+  return item;
+}
+
+function expenseListFor(day, type = "expense") {
+  const list = expenses
+    .filter((entry) => entry.date === day && (type === "income" ? isIncome(entry) : !isIncome(entry)))
+    .sort((a, b) => Number(b.amount) - Number(a.amount));
+  if (!list.length) {
+    const empty = document.createElement("p");
+    empty.className = "detail-empty-inline";
+    empty.textContent = type === "income" ? "No income recorded on this day." : "No expenses recorded on this day.";
+    return empty;
+  }
+  const ul = document.createElement("ul");
+  ul.className = "detail-expense-list";
+  ul.append(...list.map(expenseItem));
+  return ul;
+}
+
+function buildIncomePanelBody(key, body, month, summary, elapsedDays) {
+  const totals = incomeTotals(expenses, month).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount);
+  const total = totals.reduce((sum, item) => sum + item.amount, 0);
+
+  if (key === "remaining") {
+    if (!total) {
+      buildPrompt(body, "No income recorded for this month yet. Switch the form to Income to add one.");
+      return;
+    }
+    body.append(statRow([
+      statTile("Income this month", currency.format(total)),
+      statTile("Categories used", String(totals.length)),
+      statTile("Average per day", currency.format(elapsedDays ? total / elapsedDays : 0)),
+      statTile("Largest source", `${currency.format(totals[0].amount)} · ${totals[0].category}`),
+    ]));
+    const list = document.createElement("ul");
+    list.className = "detail-expense-list";
+    for (const item of totals) {
+      const row = document.createElement("li");
+      row.className = "detail-expense is-income";
+      const icon = document.createElement("span");
+      icon.className = "detail-expense-icon";
+      icon.textContent = INCOME_ICONS[item.category] ?? "➕";
+      icon.setAttribute("aria-hidden", "true");
+      const details = document.createElement("span");
+      details.className = "detail-expense-details";
+      const name = document.createElement("strong");
+      name.textContent = item.category;
+      const meta = document.createElement("span");
+      meta.textContent = `${Math.round(item.amount / total * 100)}% of income`;
+      details.append(name, meta);
+      const amount = document.createElement("strong");
+      amount.className = "detail-expense-amount";
+      amount.textContent = currency.format(item.amount);
+      row.append(icon, details, amount);
+      list.append(row);
+    }
+    body.append(list);
+    return;
+  }
+
+  if (key === "daily-budget") {
+    if (!total) {
+      buildPrompt(body, "No income recorded for this month yet.");
+      return;
+    }
+    const byDay = new Map();
+    for (const entry of expenses) {
+      if (!isIncome(entry) || !entry.date.startsWith(month)) continue;
+      byDay.set(entry.date, (byDay.get(entry.date) ?? 0) + Math.round(Number(entry.amount) * 100));
+    }
+    const best = [...byDay.entries()].sort((a, b) => b[1] - a[1])[0];
+    body.append(statRow([
+      statTile("Income this month", currency.format(total)),
+      statTile("Days with income", String(byDay.size)),
+      statTile("Average per day", currency.format(elapsedDays ? total / elapsedDays : 0)),
+      statTile("Largest day", `${currency.format(best[1] / 100)} · ${dayLabel(best[0])}`),
+    ]));
+    body.append(noteLine(`Income is spread over ${elapsedDays} elapsed day${elapsedDays === 1 ? "" : "s"} in ${monthLabel(month)}. It is added to the balance and is never counted against the budget.`));
+    return;
+  }
+
+  if (key === "daily-remaining") {
+    const day = dayInput.value;
+    const dayIncome = expenses.filter((entry) => isIncome(entry) && entry.date === day);
+    const dayTotal = dayIncome.reduce((sum, entry) => sum + Number(entry.amount), 0);
+    body.append(statRow([
+      statTile(`Income on ${dayLabel(day)}`, currency.format(dayTotal)),
+      statTile("Records", String(dayIncome.length)),
+      statTile("Income this month", currency.format(total)),
+    ]));
+    body.append(expenseListFor(day, "income"));
+    return;
+  }
+}
+
 function buildPanelBody(key, body) {
   const month = monthInput.value;
   const budget = currentBudget();
@@ -614,6 +744,11 @@ function buildPanelBody(key, body) {
   const daysInView = totals.length;
   const isCurrentMonth = month === today.slice(0, 7);
   const elapsedDays = isCurrentMonth ? Math.min(Number(today.slice(8, 10)), daysInView) : daysInView;
+
+  if (formMode === "income" && key !== "balance") {
+    buildIncomePanelBody(key, body, month, summary, elapsedDays);
+    return;
+  }
 
   if (key === "balance") {
     if (settings.openingBalance === null) {
@@ -949,48 +1084,88 @@ function persistPresets() {
   localStorage.setItem(presetKey, JSON.stringify(presets));
 }
 
+const presetGroupOpen = new Map();
+
+function presetRow(preset) {
+  const chip = document.createElement("div");
+  chip.className = "preset-chip";
+  if (preset.type === "income") chip.classList.add("is-income");
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "preset-add";
+  add.title = `Load ${preset.label} into the form`;
+  const icon = document.createElement("span");
+  icon.className = "preset-icon";
+  icon.textContent = (preset.type === "income" ? INCOME_ICONS[preset.category] : CATEGORY_ICONS[preset.category]) ?? "✨";
+  icon.setAttribute("aria-hidden", "true");
+  const name = document.createElement("span");
+  name.className = "preset-name";
+  name.textContent = preset.label;
+  const amount = document.createElement("strong");
+  amount.className = "preset-amount";
+  amount.textContent = currency.format(preset.amount);
+  add.append(icon, name, amount);
+  add.addEventListener("click", () => applyPreset(preset));
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "preset-remove";
+  remove.setAttribute("aria-label", `Remove quick add ${preset.label}`);
+  remove.textContent = "×";
+  remove.addEventListener("click", () => {
+    presets = removePreset(presets, preset.id);
+    persistPresets();
+    renderPresets();
+    presetMessage.textContent = `Removed "${preset.label}".`;
+  });
+  chip.append(add, remove);
+  return chip;
+}
+
 function renderPresets() {
   presetList.replaceChildren();
   if (!presets.length) {
     const empty = document.createElement("p");
     empty.className = "preset-empty";
-    empty.textContent = "Save a repeat purchase, such as your usual lunch, and record it in one click.";
+    empty.textContent = "Save a repeat purchase, such as your usual lunch, then load it back here when you need it.";
     presetList.append(empty);
     return;
   }
-  for (const preset of presets) {
-    const chip = document.createElement("div");
-    chip.className = "preset-chip";
-    if (preset.type === "income") chip.classList.add("is-income");
-    const add = document.createElement("button");
-    add.type = "button";
-    add.className = "preset-add";
-    add.title = `Load ${preset.label} into the form`;
-    const icon = document.createElement("span");
-    icon.className = "preset-icon";
-    icon.textContent = (preset.type === "income" ? INCOME_ICONS[preset.category] : CATEGORY_ICONS[preset.category]) ?? "✨";
-    icon.setAttribute("aria-hidden", "true");
-    const name = document.createElement("span");
-    name.className = "preset-name";
-    name.textContent = preset.label;
-    const amount = document.createElement("strong");
-    amount.className = "preset-amount";
-    amount.textContent = currency.format(preset.amount);
-    add.append(icon, name, amount);
-    add.addEventListener("click", () => applyPreset(preset));
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "preset-remove";
-    remove.setAttribute("aria-label", `Remove quick add ${preset.label}`);
-    remove.textContent = "×";
-    remove.addEventListener("click", () => {
-      presets = removePreset(presets, preset.id);
-      persistPresets();
+  const groups = [
+    { type: "expense", label: "Expense quick adds" },
+    { type: "income", label: "Income quick adds" },
+  ];
+  for (const group of groups) {
+    const items = presets
+      .filter((preset) => (preset.type === "income") === (group.type === "income"))
+      .sort((a, b) => Number(b.amount) - Number(a.amount));
+    if (!items.length) continue;
+    const open = presetGroupOpen.has(group.type) ? presetGroupOpen.get(group.type) : formMode === group.type;
+    const wrapper = document.createElement("div");
+    wrapper.className = "preset-group";
+    if (group.type === "income") wrapper.classList.add("is-income");
+    const head = document.createElement("button");
+    head.type = "button";
+    head.className = "preset-group-head";
+    head.setAttribute("aria-expanded", String(open));
+    const headLabel = document.createElement("span");
+    headLabel.textContent = group.label;
+    const count = document.createElement("em");
+    count.textContent = String(items.length);
+    const caret = document.createElement("span");
+    caret.className = "preset-group-caret";
+    caret.setAttribute("aria-hidden", "true");
+    caret.textContent = "⌄";
+    head.append(headLabel, count, caret);
+    const bodyEl = document.createElement("div");
+    bodyEl.className = "preset-group-body";
+    bodyEl.hidden = !open;
+    for (const preset of items) bodyEl.append(presetRow(preset));
+    head.addEventListener("click", () => {
+      presetGroupOpen.set(group.type, !open);
       renderPresets();
-      presetMessage.textContent = `Removed "${preset.label}".`;
     });
-    chip.append(add, remove);
-    presetList.append(chip);
+    wrapper.append(head, bodyEl);
+    presetList.append(wrapper);
   }
 }
 
@@ -1385,6 +1560,30 @@ historyToggle.addEventListener("click", () => {
 });
 
 function renderUsage(summary, budget) {
+  if (formMode === "income") {
+    const income = summary.monthlyIncome;
+    usagePanel.classList.remove("warn", "over");
+    if (!income) {
+      usagePercent.textContent = "—";
+      usageCaption.textContent = "Add income to see the ratio";
+      usageBar.style.width = "0%";
+      usageBudget.textContent = "—";
+      usagePanel.querySelector(".usage-track").setAttribute("aria-label", "No income recorded for this month");
+      return;
+    }
+    const spentShare = summary.monthlySpent / income * 100;
+    usagePercent.textContent = `${Math.round(spentShare)}%`;
+    usageCaption.textContent = "of this month's income spent";
+    usageBar.style.width = `${Math.min(spentShare, 100)}%`;
+    usageBudget.textContent = currency.format(income);
+    usagePanel.classList.toggle("warn", spentShare >= 75 && spentShare < 100);
+    usagePanel.classList.toggle("over", spentShare >= 100);
+    usagePanel.querySelector(".usage-track").setAttribute(
+      "aria-label",
+      `${Math.round(spentShare)} percent of this month's income spent, ${currency.format(summary.monthlySpent)} of ${currency.format(income)}`,
+    );
+    return;
+  }
   if (budget === null) {
     usagePercent.textContent = "—";
     usageCaption.textContent = "Set a budget to see progress";
@@ -1413,17 +1612,35 @@ function render() {
   const day = dayInput.value;
   const budget = currentBudget();
   const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, day);
-  setMetric("balance", summary.balance, settings.openingBalance !== null);
-  setMetric("monthly-remaining", summary.monthlyRemaining, budget !== null);
-  setMetric("daily-budget", summary.dailyBudget, budget !== null);
-  setMetric("daily-remaining", summary.dailyRemaining, budget !== null);
+  const totals = dailyTotals(expenses, month);
+  const isCurrentMonth = month === today.slice(0, 7);
+  const elapsedDays = isCurrentMonth ? Math.min(Number(today.slice(8, 10)), totals.length) : totals.length;
+  const dayIncome = expenses
+    .filter((entry) => isIncome(entry) && entry.date === day)
+    .reduce((sum, entry) => sum + Number(entry.amount), 0);
+  const hasRecords = expenses.length > 0 || settings.openingBalance !== null;
+
+  if (formMode === "income") {
+    setMetric("balance", summary.balance, hasRecords);
+    setMetric("monthly-remaining", summary.monthlyIncome, hasRecords);
+    setMetric("daily-budget", elapsedDays ? summary.monthlyIncome / elapsedDays : 0, hasRecords);
+    setMetric("daily-remaining", dayIncome, hasRecords);
+  } else {
+    setMetric("balance", summary.balance, settings.openingBalance !== null);
+    setMetric("monthly-remaining", summary.monthlyRemaining, budget !== null);
+    setMetric("daily-budget", summary.dailyBudget, budget !== null);
+    setMetric("daily-remaining", summary.dailyRemaining, budget !== null);
+  }
   document.querySelector("#monthly-spent").textContent = currency.format(summary.monthlySpent);
   renderUsage(summary, budget);
-  document.querySelector("#daily-spent").textContent = budget === null
-    ? "Set a monthly budget to see your daily allowance."
-    : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
+  document.querySelector("#daily-spent").textContent = formMode === "income"
+    ? `${currency.format(dayIncome)} income recorded on ${day} · income is added to the balance, not the budget`
+    : budget === null
+      ? "Set a monthly budget to see your daily allowance."
+      : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
 
-  const visible = expenses.filter((expense) => expense.date.startsWith(month))
+  const visible = expenses
+    .filter((entry) => entry.date.startsWith(month) && (formMode === "income" ? isIncome(entry) : !isIncome(entry)))
     .sort((a, b) => b.date.localeCompare(a.date));
   renderHistory(visible);
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
@@ -1528,6 +1745,14 @@ budgetForm.addEventListener("submit", (event) => {
   render();
 });
 
+budgetClear.addEventListener("click", () => {
+  delete settings.monthlyBudgets[monthInput.value];
+  localStorage.setItem(settingsKey, JSON.stringify(settings));
+  budgetInput.value = "";
+  budgetMessage.textContent = `Monthly budget cleared for ${monthLabel(monthInput.value)}. The starting balance is unchanged.`;
+  render();
+});
+
 monthInput.addEventListener("change", () => {
   if (!dayInput.value.startsWith(monthInput.value)) dayInput.value = `${monthInput.value}-01`;
   if (editingExpenseId === null) dateInput.value = dayInput.value;
@@ -1554,5 +1779,6 @@ dateInput.addEventListener("change", () => {
 
 populateBudgetForm();
 renderPresets();
+applyPageMode();
 render();
 
