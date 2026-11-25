@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -167,10 +167,21 @@
             <div class="preset-block">
               <div class="preset-head">
                 <p class="preset-title">Quick add</p>
-                <button id="preset-save" class="preset-save" type="button">Save current entry as quick add</button>
+                <div class="preset-actions">
+                  <button id="preset-save" class="preset-save" type="button">Save current entry</button>
+                  <button id="preset-toggle" class="preset-toggle" type="button" aria-expanded="false" aria-controls="preset-list" aria-label="Show saved quick adds">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>
+                  </button>
+                </div>
               </div>
-              <div id="preset-list" class="preset-list"></div>
+              <div id="preset-list" class="preset-list" hidden></div>
               <p id="preset-message" class="status" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="mode-switch" role="group" aria-label="Entry type">
+              <span class="mode-slider" aria-hidden="true"></span>
+              <button type="button" class="mode-button is-active" data-mode="expense" aria-pressed="true">Expense</button>
+              <button type="button" class="mode-button" data-mode="income" aria-pressed="false">Income</button>
             </div>
 
             <form id="expense-form" class="form-grid">
@@ -250,18 +261,15 @@
             <span id="trend-month" class="chip"></span>
           </div>
           <div id="trend-stats" class="trend-stats"></div>
-          <div class="trend-chart-wrap">
-            <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
-          </div>
-          <p id="trend-desc" class="trend-note"></p>
-
-          <div class="calendar-block">
-            <div class="calendar-head">
-              <h3>Month at a glance</h3>
-              <div id="calendar-legend" class="calendar-legend"></div>
+          <div class="chart-surface">
+            <div class="chart-surface-head">
+              <span>Spending trend</span>
+              <strong>Dashed line = fixed daily budget</strong>
             </div>
-            <div id="calendar-grid-wrap"></div>
-            <div id="calendar-day-box" class="calendar-day-box"></div>
+            <div class="trend-chart-wrap">
+              <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
+            </div>
+            <p id="trend-desc" class="trend-note"></p>
           </div>
         </section>
 
@@ -283,11 +291,26 @@
             </div>
             <span id="pie-month" class="chip"></span>
           </div>
-          <div class="pie-layout">
+          <div class="pie-layout chart-surface">
             <div id="pie-chart" class="pie-chart-wrap"></div>
             <ul id="pie-legend" class="pie-legend"></ul>
           </div>
           <p id="pie-note" class="trend-note"></p>
+        </section>
+
+        <section class="panel income-panel" aria-labelledby="income-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Income</p>
+              <h2 id="income-title">Where your income came from</h2>
+            </div>
+            <span id="income-month" class="chip"></span>
+          </div>
+          <div class="pie-layout chart-surface">
+            <div id="income-chart" class="pie-chart-wrap"></div>
+            <ul id="income-legend" class="pie-legend"></ul>
+          </div>
+          <p id="income-note" class="trend-note"></p>
         </section>
       </div>
 

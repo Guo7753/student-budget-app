@@ -1,4 +1,4 @@
-﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, balanceTrend, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -28,9 +28,6 @@ const trendStats = document.querySelector("#trend-stats");
 const trendMonth = document.querySelector("#trend-month");
 const trendDesc = document.querySelector("#trend-desc");
 const metricDetail = document.querySelector("#metric-detail");
-const calendarGridWrap = document.querySelector("#calendar-grid-wrap");
-const calendarLegend = document.querySelector("#calendar-legend");
-const calendarDayBox = document.querySelector("#calendar-day-box");
 const pieChartWrap = document.querySelector("#pie-chart");
 const pieLegend = document.querySelector("#pie-legend");
 const pieMonth = document.querySelector("#pie-month");
@@ -39,12 +36,19 @@ const pageData = document.querySelector("#page-data");
 const pageInsights = document.querySelector("#page-insights");
 const presetList = document.querySelector("#preset-list");
 const presetSave = document.querySelector("#preset-save");
+const presetToggle = document.querySelector("#preset-toggle");
 const presetMessage = document.querySelector("#preset-message");
 const historyToggle = document.querySelector("#history-toggle");
 const usageToggle = document.querySelector("#usage-toggle");
 const usageDetail = document.querySelector("#usage-detail");
 const paceMonth = document.querySelector("#pace-month");
 const paceBody = document.querySelector("#pace-body");
+const modeSwitch = document.querySelector(".mode-switch");
+const addTitle = document.querySelector("#add-title");
+const incomeChartWrap = document.querySelector("#income-chart");
+const incomeLegend = document.querySelector("#income-legend");
+const incomeMonth = document.querySelector("#income-month");
+const incomeNote = document.querySelector("#income-note");
 const monthButton = document.querySelector("#month-button");
 const monthButtonLabel = document.querySelector("#month-button-label");
 const monthPopover = document.querySelector("#month-popover");
@@ -108,6 +112,7 @@ try {
   presets = [];
 }
 let showAllHistory = false;
+let formMode = "expense";
 
 const today = localDate();
 populateMonthOptions();
@@ -115,12 +120,45 @@ dateInput.value = today;
 monthInput.value = today.slice(0, 7);
 dayInput.value = today;
 const categoryInput = document.querySelector("#category");
-for (const category of CATEGORIES) {
-  const option = document.createElement("option");
-  option.value = category;
-  option.textContent = `${CATEGORY_ICONS[category]}  ${category}`;
-  categoryInput.append(option);
+
+function populateCategories() {
+  const list = formMode === "income" ? INCOME_CATEGORIES : CATEGORIES;
+  const icons = formMode === "income" ? INCOME_ICONS : CATEGORY_ICONS;
+  const selected = categoryInput.value;
+  categoryInput.replaceChildren();
+  for (const category of list) {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = `${icons[category]}  ${category}`;
+    categoryInput.append(option);
+  }
+  if (list.includes(selected)) categoryInput.value = selected;
 }
+
+function setFormMode(mode) {
+  formMode = mode === "income" ? "income" : "expense";
+  const isIncomeMode = formMode === "income";
+  populateCategories();
+  for (const button of modeSwitch.querySelectorAll(".mode-button")) {
+    const active = button.dataset.mode === formMode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+  modeSwitch.classList.toggle("is-income", isIncomeMode);
+  const panel = expenseForm.closest(".panel");
+  panel.classList.toggle("is-income-mode", isIncomeMode);
+  addTitle.textContent = isIncomeMode ? "Add income" : "Add an expense";
+  if (!editingExpenseId) {
+    expenseSubmit.innerHTML = isIncomeMode
+      ? 'Save income<span aria-hidden="true">→</span>'
+      : 'Save expense<span aria-hidden="true">→</span>';
+  }
+}
+
+for (const button of modeSwitch.querySelectorAll(".mode-button")) {
+  button.addEventListener("click", () => setFormMode(button.dataset.mode));
+}
+populateCategories();
 
 function currentBudget() {
   const value = settings.monthlyBudgets[monthInput.value];
@@ -772,42 +810,32 @@ for (const card of document.querySelectorAll(".metric-card")) {
   card.addEventListener("click", () => togglePanel(card.dataset.panel));
 }
 
-calendarGridWrap.addEventListener("click", (event) => {
-  const cell = event.target.closest(".cal-day[data-day]");
-  if (!cell) return;
-  calendarDay = calendarDay === cell.dataset.day ? null : cell.dataset.day;
-  renderCalendarBlock();
-});
-
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && openPanel) closePanels();
 });
 
 /* ---------- insights: calendar and category share ---------- */
-
-function renderCalendarBlock() {
-  const month = monthInput.value;
+function renderCalendarInto(wrap, legendEl, dayBoxEl, month = monthInput.value) {
   const totals = dailyTotals(expenses, month);
   const budget = currentBudget();
   const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value);
   const dailyBudget = budget === null ? null : summary.dailyBudget;
-  calendarGridWrap.replaceChildren();
-  calendarLegend.replaceChildren(...buildCalendarLegend(budget !== null).children);
+  wrap.replaceChildren();
+  legendEl.replaceChildren(...buildCalendarLegend(budget !== null).children);
+  dayBoxEl.replaceChildren();
   if (!totals.length) {
     const empty = document.createElement("p");
     empty.className = "detail-prompt";
     empty.textContent = "Choose a month to see the daily calendar.";
-    calendarGridWrap.append(empty);
-    calendarDayBox.replaceChildren();
+    wrap.append(empty);
     return;
   }
-  calendarGridWrap.append(buildCalendar(month, totals, dailyBudget));
-  calendarDayBox.replaceChildren();
+  wrap.append(buildCalendar(month, totals, dailyBudget));
   if (calendarDay) {
     const heading = document.createElement("h4");
     const dayTotal = totals.find((item) => item.day === calendarDay)?.amount ?? 0;
     heading.textContent = `${dayLabel(calendarDay)} · ${currency.format(dayTotal)}${dailyBudget !== null ? ` · daily budget ${currency.format(dailyBudget)}` : ""}`;
-    calendarDayBox.append(heading, expenseListFor(calendarDay));
+    dayBoxEl.append(heading, expenseListFor(calendarDay));
   }
 }
 
@@ -889,7 +917,7 @@ function renderPie(month) {
     row.append(swatch, icon, name, amount, share);
     pieLegend.append(row);
   });
-  pieNote.textContent = `Total spent in ${monthLabel(month)}: ${currency.format(total)}. Shares are based on recorded expenses only.`;
+  pieNote.textContent = `Total spent in ${monthLabel(month)}: ${currency.format(total)}. Shares use recorded expenses only; income is shown separately and does not affect the budget.`;
 }
 
 /* ---------- page tabs ---------- */
@@ -903,8 +931,9 @@ function showPage(page) {
   for (const tab of tabs) tab.setAttribute("aria-selected", String(tab.dataset.page === page));
   if (isInsights) {
     renderTrend(monthInput.value);
-    renderCalendarBlock();
     renderPie(monthInput.value);
+    renderIncome(monthInput.value);
+    renderPace();
   } else if (openPanel) {
     renderOpenPanel();
   }
@@ -932,13 +961,14 @@ function renderPresets() {
   for (const preset of presets) {
     const chip = document.createElement("div");
     chip.className = "preset-chip";
+    if (preset.type === "income") chip.classList.add("is-income");
     const add = document.createElement("button");
     add.type = "button";
     add.className = "preset-add";
-    add.title = `Add ${preset.label} for the selected date`;
+    add.title = `Load ${preset.label} into the form`;
     const icon = document.createElement("span");
     icon.className = "preset-icon";
-    icon.textContent = CATEGORY_ICONS[preset.category] ?? CATEGORY_ICONS.Other;
+    icon.textContent = (preset.type === "income" ? INCOME_ICONS[preset.category] : CATEGORY_ICONS[preset.category]) ?? "✨";
     icon.setAttribute("aria-hidden", "true");
     const name = document.createElement("span");
     name.className = "preset-name";
@@ -965,27 +995,30 @@ function renderPresets() {
 }
 
 function applyPreset(preset) {
-  const date = dateInput.value || dayInput.value;
-  const result = addExpense(expenses, {
-    amount: String(preset.amount), date, category: preset.category, note: preset.note,
-  }, crypto.randomUUID());
-  if (!result.valid) {
-    presetMessage.textContent = result.error;
-    return;
-  }
-  expenses = result.expenses;
-  localStorage.setItem(expenseKey, JSON.stringify(expenses));
-  populateMonthOptions();
-  monthInput.value = date.slice(0, 7);
-  dayInput.value = date;
-  populateBudgetForm();
-  presetMessage.textContent = `Added ${preset.label} · ${currency.format(preset.amount)} for ${dayLabel(date)}.`;
-  render();
+  setFormMode(preset.type === "income" ? "income" : "expense");
+  amountInput.value = String(preset.amount);
+  categoryInput.value = preset.category;
+  expenseForm.elements.note.value = preset.note;
+  showAmountResult();
+  presetList.hidden = true;
+  presetToggle.setAttribute("aria-expanded", "false");
+  presetToggle.classList.remove("is-open");
+  presetMessage.textContent = `Loaded "${preset.label}" into the form. Press ${preset.type === "income" ? "Save income" : "Save expense"} when you are ready.`;
+  amountInput.focus();
 }
+
+presetToggle.addEventListener("click", () => {
+  const opening = presetList.hidden;
+  presetList.hidden = !opening;
+  presetToggle.setAttribute("aria-expanded", String(opening));
+  presetToggle.classList.toggle("is-open", opening);
+});
 
 presetSave.addEventListener("click", () => {
   const input = Object.fromEntries(new FormData(expenseForm));
-  const result = addPreset(presets, { amount: input.amount, category: input.category, note: input.note }, crypto.randomUUID());
+  const result = addPreset(presets, {
+    amount: input.amount, category: input.category, note: input.note, type: formMode,
+  }, crypto.randomUUID());
   if (!result.valid) {
     presetMessage.textContent = result.error;
     return;
@@ -993,6 +1026,9 @@ presetSave.addEventListener("click", () => {
   presets = result.presets;
   persistPresets();
   renderPresets();
+  presetList.hidden = false;
+  presetToggle.setAttribute("aria-expanded", "true");
+  presetToggle.classList.add("is-open");
   presetMessage.textContent = `Saved "${presets[presets.length - 1].label}" as a quick add.`;
 });
 
@@ -1057,6 +1093,20 @@ function buildBurnDown(month, budget, options = {}) {
   return svg;
 }
 
+function burnDownSurface(month, budget, height) {
+  const surface = document.createElement("div");
+  surface.className = "chart-surface";
+  const head = document.createElement("div");
+  head.className = "chart-surface-head";
+  const label = document.createElement("span");
+  label.textContent = "Burn-down";
+  const hint = document.createElement("strong");
+  hint.textContent = "Dashed = ideal pace";
+  head.append(label, hint);
+  surface.append(head, buildBurnDown(month, budget, { height }), burnLegend());
+  return surface;
+}
+
 function burnLegend() {
   const legend = document.createElement("div");
   legend.className = "burn-legend";
@@ -1092,7 +1142,7 @@ function renderUsageDetail() {
   kicker.className = "section-kicker";
   kicker.textContent = "Monthly budget";
   const title = document.createElement("h3");
-  title.textContent = "Ideal spending pace vs what actually happened";
+  title.textContent = "Month at a glance and spending pace";
   heading.append(kicker, title);
   const close = document.createElement("button");
   close.type = "button";
@@ -1117,9 +1167,31 @@ function renderUsageDetail() {
       statTile("Remaining", currency.format(summary.monthlyRemaining), summary.monthlyRemaining < 0 ? "danger" : "safe"),
       statTile("Days left", String(daysLeft)),
     ]));
-    body.append(buildBurnDown(month, budget));
-    body.append(burnLegend());
-    body.append(noteLine("The dashed line is the ideal remaining budget if spending were spread evenly. The solid line is the real remaining budget after each recorded expense."));
+
+    const calendarBlock = document.createElement("div");
+    calendarBlock.className = "calendar-block";
+    const calendarHead = document.createElement("div");
+    calendarHead.className = "calendar-head";
+    const calendarTitle = document.createElement("h3");
+    calendarTitle.textContent = "Month at a glance";
+    const calendarLegendEl = document.createElement("div");
+    calendarLegendEl.className = "calendar-legend";
+    calendarHead.append(calendarTitle, calendarLegendEl);
+    const calendarWrap = document.createElement("div");
+    const calendarDayBoxEl = document.createElement("div");
+    calendarDayBoxEl.className = "calendar-day-box";
+    renderCalendarInto(calendarWrap, calendarLegendEl, calendarDayBoxEl, month);
+    calendarWrap.addEventListener("click", (event) => {
+      const cell = event.target.closest(".cal-day[data-day]");
+      if (!cell) return;
+      calendarDay = calendarDay === cell.dataset.day ? null : cell.dataset.day;
+      renderUsageDetail();
+    });
+    calendarBlock.append(calendarHead, calendarWrap, calendarDayBoxEl);
+    body.append(calendarBlock);
+
+    body.append(burnDownSurface(month, budget, 220));
+    body.append(noteLine("The dashed line is the ideal remaining budget if spending were spread evenly. The solid line is the real remaining budget after each recorded expense. Green days stayed within the fixed daily budget; red days went over it."));
   }
   section.append(header, body);
   usageDetail.append(section);
@@ -1132,6 +1204,79 @@ usageToggle.addEventListener("click", () => {
 });
 
 /* ---------- budget pace card on the insights page ---------- */
+const INCOME_COLORS = ["#0d9488", "#22a06b", "#65a30d", "#ca8a04", "#0ea5e9", "#7c8a86"];
+
+function renderIncome(month) {
+  const totals = incomeTotals(expenses, month).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount);
+  const total = totals.reduce((sum, item) => sum + item.amount, 0);
+  incomeMonth.textContent = monthShort(month);
+  incomeChartWrap.replaceChildren();
+  incomeLegend.replaceChildren();
+  if (!total) {
+    const empty = document.createElement("p");
+    empty.className = "detail-prompt";
+    empty.textContent = "No income recorded for this month. Switch the form to Income to add a salary, scholarship or other income.";
+    incomeChartWrap.append(empty);
+    incomeNote.textContent = "Income adds to the balance only. It is never counted against the monthly budget.";
+    return;
+  }
+  const size = 240;
+  const radius = 84;
+  const stroke = 30;
+  const circumference = 2 * Math.PI * radius;
+  const svg = svgElement("svg", {
+    viewBox: `0 0 ${size} ${size}`,
+    class: "pie-chart",
+    role: "img",
+    "aria-label": `Income sources for ${monthLabel(month)}: ${totals.map((item) => `${item.category} ${Math.round(item.amount / total * 100)} percent`).join(", ")}`,
+  });
+  svg.append(svgElement("circle", { cx: size / 2, cy: size / 2, r: radius, fill: "none", stroke: "#eef3f1", "stroke-width": stroke }));
+  let offset = 0;
+  totals.forEach((item, index) => {
+    const share = item.amount / total;
+    const segment = svgElement("circle", {
+      cx: size / 2, cy: size / 2, r: radius, fill: "none",
+      stroke: INCOME_COLORS[index % INCOME_COLORS.length],
+      "stroke-width": stroke,
+      "stroke-dasharray": `${share * circumference} ${circumference - share * circumference}`,
+      "stroke-dashoffset": -offset * circumference,
+      transform: `rotate(-90 ${size / 2} ${size / 2})`,
+    });
+    const title = svgElement("title");
+    title.textContent = `${item.category}: ${currency.format(item.amount)} (${Math.round(share * 100)}%)`;
+    segment.append(title);
+    svg.append(segment);
+    offset += share;
+  });
+  const centreValue = svgElement("text", { x: size / 2, y: size / 2 - 4, class: "pie-centre-value", "text-anchor": "middle" });
+  centreValue.textContent = shortMoney(total);
+  const centreLabel = svgElement("text", { x: size / 2, y: size / 2 + 18, class: "pie-centre-label", "text-anchor": "middle" });
+  centreLabel.textContent = "income";
+  svg.append(centreValue, centreLabel);
+  incomeChartWrap.append(svg);
+  totals.forEach((item, index) => {
+    const row = document.createElement("li");
+    row.className = "pie-row";
+    const swatch = document.createElement("i");
+    swatch.style.background = INCOME_COLORS[index % INCOME_COLORS.length];
+    const icon = document.createElement("span");
+    icon.className = "pie-icon";
+    icon.textContent = INCOME_ICONS[item.category] ?? "➕";
+    const name = document.createElement("span");
+    name.className = "pie-name";
+    name.textContent = item.category;
+    const amount = document.createElement("strong");
+    amount.className = "pie-amount";
+    amount.textContent = currency.format(item.amount);
+    const share = document.createElement("span");
+    share.className = "pie-share";
+    share.textContent = `${Math.round(item.amount / total * 100)}%`;
+    row.append(swatch, icon, name, amount, share);
+    incomeLegend.append(row);
+  });
+  incomeNote.textContent = `Total income in ${monthLabel(month)}: ${currency.format(total)}. Income adds to the balance only; it is not counted against the monthly budget.`;
+}
+
 
 function renderPace() {
   const month = monthInput.value;
@@ -1160,8 +1305,7 @@ function renderPace() {
     statTile("Projection", difference >= 0 ? `Under by ${currency.format(difference)}` : `Over by ${currency.format(Math.abs(difference))}`, difference >= 0 ? "safe" : "danger"),
     statTile("Days with spending", `${totals.filter((item) => item.amount > 0).length} of ${elapsed}`),
   ]));
-  paceBody.append(buildBurnDown(month, budget, { height: 210 }));
-  paceBody.append(burnLegend());
+  paceBody.append(burnDownSurface(month, budget, 210));
   paceBody.append(noteLine(difference >= 0
     ? "At the current daily average, the month would end below the budget. This is a projection, not a guarantee."
     : "At the current daily average, the month would end above the budget. Reduce daily spending or adjust the budget."));
@@ -1181,34 +1325,38 @@ function renderHistory(visible) {
   const shown = showAllHistory ? visible : visible.slice(0, limit);
   list.replaceChildren();
   for (const expense of shown) {
+    const income = isIncome(expense);
     const item = document.createElement("li");
     item.className = "expense-row";
+    if (income) item.classList.add("is-income");
     const icon = document.createElement("span");
     icon.className = "expense-icon";
-    icon.textContent = CATEGORY_ICONS[expense.category] ?? CATEGORY_ICONS.Other;
+    icon.textContent = income
+      ? (INCOME_ICONS[expense.category] ?? "➕")
+      : (CATEGORY_ICONS[expense.category] ?? CATEGORY_ICONS.Other);
     icon.setAttribute("aria-hidden", "true");
     const details = document.createElement("div");
     details.className = "expense-details";
     const category = document.createElement("strong");
-    category.textContent = expense.category;
+    category.textContent = income ? `${expense.category} · income` : expense.category;
     const meta = document.createElement("span");
     meta.className = "expense-meta";
     meta.textContent = `${expense.date}${expense.note ? ` · ${expense.note}` : ""}`;
     details.append(category, meta);
     const amount = document.createElement("strong");
     amount.className = "expense-amount";
-    amount.textContent = currency.format(Number(expense.amount));
+    amount.textContent = income ? `+${currency.format(Number(expense.amount))}` : currency.format(Number(expense.amount));
     const edit = document.createElement("button");
     edit.type = "button";
     edit.className = "edit-button";
     edit.textContent = "Edit";
-    edit.setAttribute("aria-label", `Edit ${expense.category} expense from ${expense.date}`);
+    edit.setAttribute("aria-label", `Edit ${expense.category} ${income ? "income" : "expense"} from ${expense.date}`);
     edit.addEventListener("click", () => beginEditing(expense));
     const button = document.createElement("button");
     button.type = "button";
     button.className = "delete-button";
     button.textContent = "Delete";
-    button.setAttribute("aria-label", `Delete ${expense.category} expense from ${expense.date}`);
+    button.setAttribute("aria-label", `Delete ${expense.category} ${income ? "income" : "expense"} from ${expense.date}`);
     button.addEventListener("click", () => {
       expenses = removeExpense(expenses, expense.id);
       localStorage.setItem(expenseKey, JSON.stringify(expenses));
@@ -1280,8 +1428,8 @@ function render() {
   renderHistory(visible);
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
   renderTrend(month);
-  renderCalendarBlock();
   renderPie(month);
+  renderIncome(month);
   renderPace();
   if (!usageDetail.hidden) renderUsageDetail();
   if (openPanel) renderOpenPanel();
@@ -1291,13 +1439,16 @@ function resetExpenseForm() {
   editingExpenseId = null;
   expenseForm.reset();
   expenseForm.elements.date.value = dayInput.value;
-  expenseSubmit.innerHTML = "Save expense <span aria-hidden=\"true\">→</span>";
+  expenseSubmit.innerHTML = formMode === "income"
+    ? 'Save income<span aria-hidden="true">→</span>'
+    : 'Save expense<span aria-hidden="true">→</span>';
   cancelEdit.hidden = true;
   showAmountResult();
 }
 
 function beginEditing(expense) {
   editingExpenseId = expense.id;
+  setFormMode(isIncome(expense) ? "income" : "expense");
   expenseForm.elements.amount.value = Number(expense.amount).toFixed(2);
   expenseForm.elements.date.value = expense.date;
   expenseForm.elements.category.value = expense.category;
@@ -1306,9 +1457,11 @@ function beginEditing(expense) {
   monthInput.value = expense.date.slice(0, 7);
   dayInput.value = expense.date;
   populateBudgetForm();
-  expenseSubmit.innerHTML = "Update expense <span aria-hidden=\"true\">→</span>";
+  expenseSubmit.innerHTML = formMode === "income"
+    ? 'Update income<span aria-hidden="true">→</span>'
+    : 'Update expense<span aria-hidden="true">→</span>';
   cancelEdit.hidden = false;
-  expenseMessage.textContent = "Editing this expense. Save to replace the recorded details.";
+  expenseMessage.textContent = `Editing this ${formMode}. Save to replace the recorded details.`;
   showAmountResult();
   expenseForm.elements.amount.focus();
   render();
@@ -1336,7 +1489,8 @@ amountInput.addEventListener("input", showAmountResult);
 
 expenseForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const input = Object.fromEntries(new FormData(expenseForm));
+  const input = { ...Object.fromEntries(new FormData(expenseForm)), type: formMode };
+  const label = formMode === "income" ? "Income" : "Expense";
   const result = editingExpenseId
     ? updateExpense(expenses, editingExpenseId, input)
     : addExpense(expenses, input, crypto.randomUUID());
@@ -1350,7 +1504,7 @@ expenseForm.addEventListener("submit", (event) => {
   monthInput.value = input.date.slice(0, 7);
   dayInput.value = input.date;
   populateBudgetForm();
-  expenseMessage.textContent = editingExpenseId ? "Expense updated." : "Expense saved.";
+  expenseMessage.textContent = editingExpenseId ? `${label} updated.` : `${label} saved.`;
   resetExpenseForm();
   render();
 });
@@ -1399,5 +1553,6 @@ dateInput.addEventListener("change", () => {
 });
 
 populateBudgetForm();
+renderPresets();
 render();
 

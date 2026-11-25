@@ -954,7 +954,10 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 .page-panel[hidden] { display: none; }
 .page-panel > .panel:first-child { margin-top: 0; }
 
-.history-panel, .pie-panel { margin-top: 14px; }
+.history-panel, .pie-panel, .income-panel { margin-top: 14px; }
+
+.expense-row.is-income .expense-amount { color: #0b6b45; }
+.expense-row.is-income .expense-icon { background: #e7f6ef; }
 
 /* ---------- calendar block inside insights ---------- */
 
@@ -991,6 +994,77 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   .pie-chart { width: 210px; height: 210px; }
 }
 
+/* ---------- entry mode switch ---------- */
+
+.mode-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: #eef3f1;
+  border: 1px solid var(--line);
+}
+
+.mode-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  height: calc(100% - 8px);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform .22s cubic-bezier(.22, .61, .36, 1), background .22s ease;
+}
+
+.mode-switch.is-income .mode-slider { transform: translateX(calc(100% + 4px)); background: #e4f6ec; }
+
+.mode-button {
+  position: relative;
+  z-index: 1;
+  min-height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color .18s ease;
+}
+
+.mode-button.is-active { color: var(--accent-strong); }
+.mode-switch.is-income .mode-button.is-active { color: #0b6b45; }
+.mode-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.panel.is-income-mode {
+  background: linear-gradient(180deg, #f2fbf6 0%, #ffffff 46%);
+  border-color: #bfe8d4;
+}
+
+.panel.is-income-mode .section-kicker { color: #12805c; }
+.panel.is-income-mode .primary-button { background: linear-gradient(120deg, #22a06b 0%, #0f766e 100%); box-shadow: 0 10px 22px -14px rgba(18, 128, 92, .95); }
+.panel.is-income-mode input:focus, .panel.is-income-mode select:focus { border-color: #22a06b; box-shadow: 0 0 0 3.5px rgba(34, 160, 107, .14); }
+.panel.is-income-mode .amount-result { color: #0b6b45; }
+
+/* ---------- chart surface ---------- */
+
+.chart-surface {
+  margin-top: 8px;
+  padding: 14px 16px 10px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f5faf8 0%, #ffffff 70%);
+  border: 1px solid var(--line);
+}
+
+.chart-surface-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.chart-surface-head span { font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); }
+.chart-surface-head strong { font-size: 11.5px; font-weight: 650; color: var(--muted); }
+
 /* ---------- quick add presets ---------- */
 
 .preset-block {
@@ -1005,31 +1079,53 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
 
 .preset-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .preset-title { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.preset-actions { display: inline-flex; align-items: center; gap: 8px; }
 
 .preset-save {
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px dashed var(--line-strong);
-  background: #fff;
-  color: var(--ink-soft);
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: linear-gradient(120deg, #10857c 0%, #0b5f59 100%);
+  color: #fff;
   font: inherit;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 650;
   cursor: pointer;
-  transition: border-color .15s ease, color .15s ease, background .15s ease;
+  box-shadow: 0 8px 18px -12px rgba(11, 95, 89, .9);
+  transition: filter .15s ease, transform .15s ease;
 }
 
-.preset-save:hover { border-color: var(--accent); color: var(--accent-strong); background: #f0faf7; }
-.preset-empty { margin: 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
-.preset-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.preset-save:hover { filter: brightness(1.06); transform: translateY(-1px); }
 
-.preset-chip { display: inline-flex; align-items: stretch; border-radius: 10px; border: 1px solid var(--line); background: #fff; overflow: hidden; }
+.preset-toggle {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.preset-toggle:hover { background: #f0faf7; border-color: var(--accent-soft); color: var(--accent-strong); }
+.preset-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
+.preset-toggle.is-open svg { transform: rotate(180deg); }
+
+.preset-empty { margin: 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+.preset-list { display: grid; gap: 6px; }
+.preset-list[hidden] { display: none; }
+
+.preset-chip { display: flex; align-items: stretch; border-radius: 10px; border: 1px solid var(--line); background: #fff; overflow: hidden; }
 
 .preset-add {
   display: inline-flex;
+  flex: 1;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   padding: 8px 10px;
   border: none;
   background: transparent;
@@ -1037,13 +1133,17 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   font: inherit;
   font-size: 12.5px;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
   transition: background .12s ease, color .12s ease;
 }
 
 .preset-add:hover { background: #f0faf7; color: var(--accent-strong); }
+.preset-chip.is-income .preset-add:hover { background: #e9f7ef; color: #0b6b45; }
 .preset-icon { font-size: 14px; line-height: 1; }
+.preset-name { flex: 1; }
 .preset-amount { font-variant-numeric: tabular-nums; color: var(--accent-strong); }
+.preset-chip.is-income .preset-amount { color: #0b6b45; }
 
 .preset-remove {
   width: 26px;

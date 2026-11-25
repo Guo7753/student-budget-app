@@ -20,6 +20,9 @@ The current interface is functional but visually plain. The demonstration is ass
 10. **Two pages with navigation** - a **Data** page for month selection, summary cards, budget setting, expense entry and the month's expense list; and an **Insights** page for analysis. Page switching keeps the selected month and day.
 11. **Expandable detail panels** - the summary cards open panels that explain their figure: a balance timeline, a month-end budget projection, the daily-budget calculation and its fixed behaviour, and the selected day's expenses. Over-budget days use a red treatment plus a visible marker so the meaning does not depend on colour alone.
 12. **Insights content** - the daily spending trend and the month calendar are combined into one card, so a day's total, the shape of the month, and whether each day stayed within the daily budget are read together. A category-share donut chart replaces the previous horizontal bars, with a ranked legend showing amount and percentage, which reduces visual noise while keeping the comparison readable.
+13. **Income support** - an Expense / Income switch changes the form colour, category list and action label. Income uses six income categories, appears in its own donut chart, and is added to the balance only: the monthly budget, daily budget and spending charts are unchanged by income.
+14. **Quick add presets** - a repeat purchase can be saved from the current form, then loaded back into the form from a collapsible list so the date, amount or note can be adjusted before saving.
+15. **Chart readability** - each chart sits on a tinted chart surface with an explicit label and a hint about the dashed reference line, so charts separate from the surrounding panels at projector distance.
 
 ## Constraints
 

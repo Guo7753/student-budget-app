@@ -8,6 +8,17 @@ export const CATEGORY_ICONS = {
   Bills: "🧾", Health: "💊", Shopping: "🛍️", Entertainment: "🎬", Other: "✨",
 };
 
+export const INCOME_CATEGORIES = [
+  "Salary", "Scholarship", "Part-time job", "Family support", "Refund", "Other income",
+];
+
+export const INCOME_ICONS = {
+  Salary: "💼", Scholarship: "🎓", "Part-time job": "🧑‍💻", "Family support": "👨‍👩‍👧",
+  Refund: "↩️", "Other income": "➕",
+};
+
+export const isIncome = (entry) => entry?.type === "income";
+
 const cents = (amount) => Math.round(Number(amount) * 100);
 
 export function calculateAmount(expression) {
@@ -56,6 +67,7 @@ export function calculateAmount(expression) {
 export function categoryTotals(expenses, month) {
   const totals = Object.fromEntries(CATEGORIES.map((category) => [category, 0]));
   for (const expense of expenses) {
+    if (isIncome(expense)) continue;
     if (expense.date.startsWith(month) && Object.hasOwn(totals, expense.category)) {
       totals[expense.category] += cents(expense.amount);
     }
@@ -63,34 +75,51 @@ export function categoryTotals(expenses, month) {
   return CATEGORIES.map((category) => ({ category, amount: totals[category] / 100 }));
 }
 
-export function dailyTotals(expenses, month) {
+export function incomeTotals(entries, month) {
+  const totals = Object.fromEntries(INCOME_CATEGORIES.map((category) => [category, 0]));
+  for (const entry of entries) {
+    if (!isIncome(entry)) continue;
+    if (entry.date.startsWith(month) && Object.hasOwn(totals, entry.category)) {
+      totals[entry.category] += cents(entry.amount);
+    }
+  }
+  return INCOME_CATEGORIES.map((category) => ({ category, amount: totals[category] / 100 }));
+}
+
+export function dailyTotals(entries, month) {
   const days = daysInMonth(month);
   if (!days) return [];
   const totals = Array.from({ length: days }, (_, index) => ({
     day: `${month}-${String(index + 1).padStart(2, "0")}`,
     amount: 0,
   }));
-  for (const expense of expenses) {
-    if (!expense.date.startsWith(month)) continue;
-    const dayNumber = Number(expense.date.slice(8, 10));
+  for (const entry of entries) {
+    if (isIncome(entry)) continue;
+    if (!entry.date.startsWith(month)) continue;
+    const dayNumber = Number(entry.date.slice(8, 10));
     const bucket = totals[dayNumber - 1];
     if (!bucket) continue;
-    bucket.amount += cents(expense.amount);
+    bucket.amount += cents(entry.amount);
   }
   return totals.map(({ day, amount }) => ({ day, amount: amount / 100 }));
 }
 
-export function balanceTrend(expenses, openingBalance, month) {
-  const totals = dailyTotals(expenses, month);
+export function balanceTrend(entries, openingBalance, month) {
+  const totals = dailyTotals(entries, month);
   if (!totals.length) return [];
   const openingCents = cents(openingBalance);
   const firstDay = `${month}-01`;
-  const priorCents = expenses
-    .filter((expense) => expense.date < firstDay)
-    .reduce((sum, expense) => sum + cents(expense.amount), 0);
-  let runningCents = openingCents - priorCents;
+  const priorCents = entries
+    .filter((entry) => entry.date < firstDay)
+    .reduce((sum, entry) => sum + (isIncome(entry) ? cents(entry.amount) : -cents(entry.amount)), 0);
+  const incomeByDay = new Map();
+  for (const entry of entries) {
+    if (!isIncome(entry) || !entry.date.startsWith(month)) continue;
+    incomeByDay.set(entry.date, (incomeByDay.get(entry.date) ?? 0) + cents(entry.amount));
+  }
+  let runningCents = openingCents + priorCents;
   return totals.map(({ day, amount }) => {
-    runningCents -= cents(amount);
+    runningCents += (incomeByDay.get(day) ?? 0) - cents(amount);
     return { day, balance: runningCents / 100 };
   });
 }
@@ -117,18 +146,24 @@ export function daysInMonth(month) {
   return new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
 }
 
-export function budgetSummary(expenses, openingBalance, monthlyBudget, month, day) {
+export function budgetSummary(entries, openingBalance, monthlyBudget, month, day) {
+  const expenses = entries.filter((entry) => !isIncome(entry));
   const monthCents = expenses.filter((expense) => expense.date.startsWith(month))
     .reduce((sum, expense) => sum + cents(expense.amount), 0);
   const dayCents = expenses.filter((expense) => expense.date === day)
     .reduce((sum, expense) => sum + cents(expense.amount), 0);
   const allCents = expenses.reduce((sum, expense) => sum + cents(expense.amount), 0);
+  const incomeCents = entries.filter(isIncome)
+    .reduce((sum, entry) => sum + cents(entry.amount), 0);
+  const monthIncomeCents = entries.filter((entry) => isIncome(entry) && entry.date.startsWith(month))
+    .reduce((sum, entry) => sum + cents(entry.amount), 0);
   const days = daysInMonth(month);
   const dailyBudgetCents = days ? Math.round(cents(monthlyBudget) / days) : 0;
   return {
-    balance: (cents(openingBalance) - allCents) / 100,
+    balance: (cents(openingBalance) + incomeCents - allCents) / 100,
     monthlySpent: monthCents / 100,
     monthlyRemaining: (cents(monthlyBudget) - monthCents) / 100,
+    monthlyIncome: monthIncomeCents / 100,
     dailyBudget: dailyBudgetCents / 100,
     dailySpent: dayCents / 100,
     dailyRemaining: (dailyBudgetCents - dayCents) / 100,
@@ -136,6 +171,8 @@ export function budgetSummary(expenses, openingBalance, monthlyBudget, month, da
 }
 
 export function validateExpense(input) {
+  const type = input.type === "income" ? "income" : "expense";
+  const categories = type === "income" ? INCOME_CATEGORIES : CATEGORIES;
   const amount = calculateAmount(input.amount);
   if (amount === null) {
     return { valid: false, error: "Enter a positive amount or a valid calculation, such as 12+3." };
@@ -145,15 +182,16 @@ export function validateExpense(input) {
       new Date(`${input.date}T00:00:00Z`).toISOString().slice(0, 10) !== input.date) {
     return { valid: false, error: "Choose a valid date." };
   }
-  if (!CATEGORIES.includes(input.category)) {
-    return { valid: false, error: "Choose a category." };
+  if (!categories.includes(input.category)) {
+    return { valid: false, error: type === "income" ? "Choose an income category." : "Choose a category." };
   }
   const note = String(input.note || "").trim();
   if (note.length > 100) {
     return { valid: false, error: "Note must be 100 characters or fewer." };
   }
-  return { valid: true, value: { amount: Math.round(amount * 100) / 100,
-    date: input.date, category: input.category, note } };
+  const value = { amount: Math.round(amount * 100) / 100, date: input.date, category: input.category, note };
+  if (type === "income") value.type = "income";
+  return { valid: true, value };
 }
 
 export function addExpense(expenses, input, id) {
@@ -179,11 +217,13 @@ export function removeExpense(expenses, id) {
 }
 
 export function validatePreset(input) {
+  const type = input.type === "income" ? "income" : "expense";
+  const categories = type === "income" ? INCOME_CATEGORIES : CATEGORIES;
   const amount = calculateAmount(input.amount);
   if (amount === null) {
     return { valid: false, error: "Enter a positive amount or a valid calculation for the quick add." };
   }
-  if (!CATEGORIES.includes(input.category)) {
+  if (!categories.includes(input.category)) {
     return { valid: false, error: "Choose a category for the quick add." };
   }
   const note = String(input.note || "").trim();
@@ -194,10 +234,9 @@ export function validatePreset(input) {
   if (label.length > 40) {
     return { valid: false, error: "Quick add name must be 40 characters or fewer." };
   }
-  return {
-    valid: true,
-    value: { amount: Math.round(amount * 100) / 100, category: input.category, note, label },
-  };
+  const value = { amount: Math.round(amount * 100) / 100, category: input.category, note, label };
+  if (type === "income") value.type = "income";
+  return { valid: true, value };
 }
 
 export function addPreset(presets, input, id) {

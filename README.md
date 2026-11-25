@@ -1,4 +1,4 @@
-﻿# Student Budget
+# Student Budget
 
 A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
@@ -6,27 +6,34 @@ A small browser-based expense tracker built for the CISE group assessment. The t
 
 The application has two pages:
 
-- **Data** - choose the month from a calendar picker, review the four summary cards and the monthly budget bar, record or edit an expense, set the budget, and browse the month's expenses.
-- **Insights** - the daily spending trend, a calendar of the month showing each day against the fixed daily budget, the budget pace projection, and a category-share donut chart.
+- **Data** - choose the month from a calendar picker, review the four summary cards and the monthly budget bar, add an expense or an income, set the budget, and browse the month's records.
+- **Insights** - the daily spending trend, the budget pace projection, a category-share donut chart for spending, and a separate donut chart for income sources.
+
+The same form switches between expenses and income:
+
+![Income mode](docs/images/dashboard-income.png)
 
 ![Insights page](docs/images/dashboard-insights.png)
 
 ## What the application does
 
+- Records expenses and income through one form with an **Expense / Income** switch; the form changes colour and category list with the selected type.
+- **Income adds to the balance only.** It never changes the monthly budget, the daily budget or the spending charts.
 - Records an expense with an amount, date, category, and optional note.
-- Saves repeat purchases as **quick adds** (for example a usual lunch) and records them in one click for the selected date.
+- Saves repeat purchases as **quick adds** (for example a usual lunch). Choosing a saved quick add **loads it into the form** so it can be adjusted before saving; quick adds are kept in a collapsible list.
 - Accepts a calculation in the amount field, such as `12+3`, or a calculator keypad; the result is previewed before saving.
-- Shows the selected month's expenses and deletes or edits a stored record (editing keeps the same record identifier). The list shows the most recent ten entries with a control to expand the rest.
-- Summarises spending with ten icon-labelled categories and a category-share donut chart.
+- Shows the selected month's records and deletes or edits a stored record (editing keeps the same record identifier). The list shows the most recent ten entries with a control to expand the rest.
+- Summarises spending with ten icon-labelled categories and a category-share donut chart, and summarises income with six income categories and its own donut chart.
 - Plots a daily spending trend for the selected month, with the total spent, the average per day, the highest day, and a dashed line for the fixed daily budget.
-- Shows a calendar of the month where every day is coloured against the fixed daily budget (green within, red over, with a marker as well as colour); selecting a day lists that day's expenses.
 - Compares the ideal spending pace with the actual remaining budget, and projects whether the month will finish under or over budget.
+- Opens a budget breakdown from the monthly budget bar: a calendar of the month where every day is coloured against the fixed daily budget (green within, red over, with a marker as well as colour), followed by the burn-down comparison.
 - Provides expandable detail panels on the summary cards:
   - **Balance** - the balance at the end of each day, with the lowest point.
   - **Monthly remaining** - budget pace and a projection for the end of the month.
   - **Daily budget** - the `budget / days` calculation and why spending never changes it.
-  - **Daily remaining** - every expense recorded on the selected day.
-- Opens a budget breakdown from the monthly budget bar, charting ideal pace against what actually happened.
+  - **Daily remaining** - every record for the selected day.
+- Keeps a starting balance and a month-specific budget, with a budget usage indicator.
+- Derives a fixed daily budget from the monthly budget and the calendar days in the month. Recording an expense changes the remaining amounts, not the daily budget.
 - Keeps a starting balance and a month-specific budget, with a budget usage indicator.
 - Derives a fixed daily budget from the monthly budget and the calendar days in the month. Recording an expense changes the remaining amounts, not the daily budget.
 
@@ -48,7 +55,7 @@ Open <http://127.0.0.1:8000>. No package download is required.
 npm test
 ```
 
-This uses Node's built-in test runner; 19 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
+This uses Node's built-in test runner; 21 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, income handling, quick add presets, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
 
 ## Project and evidence
 

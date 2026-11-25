@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
   validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals, balanceTrend,
-  validatePreset, addPreset, removePreset,
-  CATEGORIES, CATEGORY_ICONS,
+  validatePreset, addPreset, removePreset, incomeTotals,
+  CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES,
 } from "../src/budget.js";
 
 const sample = { amount: "12.50", date: "2026-11-06", category: "Food", note: "Lunch" };
@@ -166,4 +166,30 @@ test("quick add presets can be added and removed", () => {
   const updated = addPreset(created.presets, { amount: "9", category: "Transport" }, "p2");
   assert.equal(updated.presets[1].label, "Transport");
   assert.deepEqual(removePreset(updated.presets, "p1"), [updated.presets[1]]);
+});
+
+test("accepts income with an income category and rejects expense categories", () => {
+  const income = validateExpense({ type: "income", amount: "850", date: "2026-11-01", category: "Salary", note: "Part-time pay" });
+  assert.equal(income.valid, true);
+  assert.equal(income.value.type, "income");
+  assert.equal(income.value.amount, 850);
+  assert.equal(validateExpense({ type: "income", amount: "50", date: "2026-11-01", category: "Food" }).valid, false);
+  assert.equal(validateExpense({ type: "expense", amount: "50", date: "2026-11-01", category: "Salary" }).valid, false);
+});
+
+test("income is excluded from spending totals but increases the balance", () => {
+  const entries = [
+    { id: "e1", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "i1", type: "income", amount: 500, date: "2026-11-01", category: "Salary" },
+  ];
+  const summary = budgetSummary(entries, 100, 300, "2026-11", "2026-11-02");
+  assert.equal(summary.balance, 580);
+  assert.equal(summary.monthlySpent, 20);
+  assert.equal(summary.monthlyIncome, 500);
+  assert.equal(summary.dailySpent, 20);
+  assert.equal(categoryTotals(entries, "2026-11").reduce((sum, item) => sum + item.amount, 0), 20);
+  assert.equal(dailyTotals(entries, "2026-11")[1].amount, 20);
+  const income = incomeTotals(entries, "2026-11");
+  assert.equal(income.find((item) => item.category === "Salary").amount, 500);
+  assert.equal(INCOME_CATEGORIES.length, 6);
 });
