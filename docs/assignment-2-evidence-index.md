@@ -9,6 +9,9 @@ This index separates evidence already observed from evidence that must be added 
 | Iteration 2 B4 editing | `updateExpense`, browser edit and cancel checks, and two edit tests | Locally complete; PR and CI pending |
 | Q1 security scenario | Literal `<b>test</b>` browser result on 22 November 2026; `textContent` rendering in `src/app.js` | Complete for one note-rendering pathway |
 | Process improvement | [Review checklist](pr-review-checklist.md) and requested 24-hour review window | Implemented; effect pending a real next-PR review |
+| Daily team progress | Dated GitHub timeline and progress entries should be shown in the [demonstration guide](assignment-2-team-demo.md) | Existing records are not a complete daily log; add only contemporaneous or verifiable entries |
+| Group demonstration | [10-minute flow and Q&A plan](assignment-2-team-demo.md) | Prepared; actual session and attendance not yet recorded |
+| Individual contribution explanations | [Member statements](individual-contribution-statements.md) | Review for accuracy and use for each member's spoken segment |
 | Runnable application | [README](../README.md), `npm start`, `npm test` | Complete locally |
 | Final fixed submission | Repository commit or release | Pending after final review and merge |
 

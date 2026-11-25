@@ -28,6 +28,7 @@ Receipt extraction remains optional. Receipt extraction must always ask the user
 - [Assignment 2 Iteration 2 record](docs/assignment-2-iteration-2.md)
 - [Assignment 2 evidence index](docs/assignment-2-evidence-index.md)
 - [Review checklist](docs/pr-review-checklist.md)
+- [Team demonstration guide](docs/assignment-2-team-demo.md)
 
 The Assignment 1 prototype was merged through [reviewed PR 2](https://github.com/Guo7753/student-budget-app/pull/2); its [Issue 1](https://github.com/Guo7753/student-budget-app/issues/1), [passing CI run](https://github.com/Guo7753/student-budget-app/actions/runs/42192009510), and [evidence index](docs/evidence-index.md) are linked. The budget dashboard, calculator, and category chart are recorded as Assignment 2 Iteration 1 evidence in [PR 9](https://github.com/Guo7753/student-budget-app/pull/9). The B4 editing PR and CI link must be added before final submission.
 
