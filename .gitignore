@@ -2,3 +2,7 @@ report-page-*.png
 node_modules/
 .DS_Store
 
+
+# Local build outputs (reports and screenshots are kept local, not in the repository)
+*.pdf
+qa_a2-*.png
