@@ -1,4 +1,4 @@
-import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, balanceTrend, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, balanceTrend, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -37,6 +37,14 @@ const pieMonth = document.querySelector("#pie-month");
 const pieNote = document.querySelector("#pie-note");
 const pageData = document.querySelector("#page-data");
 const pageInsights = document.querySelector("#page-insights");
+const presetList = document.querySelector("#preset-list");
+const presetSave = document.querySelector("#preset-save");
+const presetMessage = document.querySelector("#preset-message");
+const historyToggle = document.querySelector("#history-toggle");
+const usageToggle = document.querySelector("#usage-toggle");
+const usageDetail = document.querySelector("#usage-detail");
+const paceMonth = document.querySelector("#pace-month");
+const paceBody = document.querySelector("#pace-body");
 const monthButton = document.querySelector("#month-button");
 const monthButtonLabel = document.querySelector("#month-button-label");
 const monthPopover = document.querySelector("#month-popover");
@@ -88,6 +96,18 @@ try {
 } catch {
   expenseMessage.textContent = "Saved data could not be read. Check this browser's storage.";
 }
+
+const presetKey = "student-budget-presets-v1";
+let presets = [];
+try {
+  const savedPresets = JSON.parse(localStorage.getItem(presetKey) || "[]");
+  if (Array.isArray(savedPresets)) {
+    presets = savedPresets.filter((preset) => preset && preset.id && Number.isFinite(Number(preset.amount)));
+  }
+} catch {
+  presets = [];
+}
+let showAllHistory = false;
 
 const today = localDate();
 populateMonthOptions();
@@ -894,49 +914,273 @@ for (const tab of tabs) {
   tab.addEventListener("click", () => showPage(tab.dataset.page));
 }
 
-function renderUsage(summary, budget) {
-  if (budget === null) {
-    usagePercent.textContent = "—";
-    usageCaption.textContent = "Set a budget to see progress";
-    usageBar.style.width = "0%";
-    usageBudget.textContent = "—";
-    usagePanel.classList.remove("warn", "over");
-    usagePanel.querySelector(".usage-track").setAttribute("aria-label", "Monthly budget not set");
-    return;
-  }
-  const percent = budget > 0 ? summary.monthlySpent / budget * 100 : 0;
-  usagePercent.textContent = `${Math.round(percent)}%`;
-  usageCaption.textContent = "of this month's budget used";
-  usageBar.style.width = `${Math.min(percent, 100)}%`;
-  usageBudget.textContent = currency.format(budget);
-  usagePanel.classList.toggle("warn", percent >= 75 && percent < 100);
-  usagePanel.classList.toggle("over", percent >= 100);
-  usagePanel.querySelector(".usage-track").setAttribute(
-    "aria-label",
-    `${Math.round(percent)} percent of the monthly budget used, ${currency.format(summary.monthlySpent)} of ${currency.format(budget)}`,
-  );
+/* ---------- quick add presets ---------- */
+
+function persistPresets() {
+  localStorage.setItem(presetKey, JSON.stringify(presets));
 }
 
-function render() {
-  updateMonthButton();
-  const month = monthInput.value;
-  const day = dayInput.value;
-  const budget = currentBudget();
-  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, day);
-  setMetric("balance", summary.balance, settings.openingBalance !== null);
-  setMetric("monthly-remaining", summary.monthlyRemaining, budget !== null);
-  setMetric("daily-budget", summary.dailyBudget, budget !== null);
-  setMetric("daily-remaining", summary.dailyRemaining, budget !== null);
-  document.querySelector("#monthly-spent").textContent = currency.format(summary.monthlySpent);
-  renderUsage(summary, budget);
-  document.querySelector("#daily-spent").textContent = budget === null
-    ? "Set a monthly budget to see your daily allowance."
-    : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
+function renderPresets() {
+  presetList.replaceChildren();
+  if (!presets.length) {
+    const empty = document.createElement("p");
+    empty.className = "preset-empty";
+    empty.textContent = "Save a repeat purchase, such as your usual lunch, and record it in one click.";
+    presetList.append(empty);
+    return;
+  }
+  for (const preset of presets) {
+    const chip = document.createElement("div");
+    chip.className = "preset-chip";
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "preset-add";
+    add.title = `Add ${preset.label} for the selected date`;
+    const icon = document.createElement("span");
+    icon.className = "preset-icon";
+    icon.textContent = CATEGORY_ICONS[preset.category] ?? CATEGORY_ICONS.Other;
+    icon.setAttribute("aria-hidden", "true");
+    const name = document.createElement("span");
+    name.className = "preset-name";
+    name.textContent = preset.label;
+    const amount = document.createElement("strong");
+    amount.className = "preset-amount";
+    amount.textContent = currency.format(preset.amount);
+    add.append(icon, name, amount);
+    add.addEventListener("click", () => applyPreset(preset));
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "preset-remove";
+    remove.setAttribute("aria-label", `Remove quick add ${preset.label}`);
+    remove.textContent = "×";
+    remove.addEventListener("click", () => {
+      presets = removePreset(presets, preset.id);
+      persistPresets();
+      renderPresets();
+      presetMessage.textContent = `Removed "${preset.label}".`;
+    });
+    chip.append(add, remove);
+    presetList.append(chip);
+  }
+}
 
+function applyPreset(preset) {
+  const date = dateInput.value || dayInput.value;
+  const result = addExpense(expenses, {
+    amount: String(preset.amount), date, category: preset.category, note: preset.note,
+  }, crypto.randomUUID());
+  if (!result.valid) {
+    presetMessage.textContent = result.error;
+    return;
+  }
+  expenses = result.expenses;
+  localStorage.setItem(expenseKey, JSON.stringify(expenses));
+  populateMonthOptions();
+  monthInput.value = date.slice(0, 7);
+  dayInput.value = date;
+  populateBudgetForm();
+  presetMessage.textContent = `Added ${preset.label} · ${currency.format(preset.amount)} for ${dayLabel(date)}.`;
+  render();
+}
+
+presetSave.addEventListener("click", () => {
+  const input = Object.fromEntries(new FormData(expenseForm));
+  const result = addPreset(presets, { amount: input.amount, category: input.category, note: input.note }, crypto.randomUUID());
+  if (!result.valid) {
+    presetMessage.textContent = result.error;
+    return;
+  }
+  presets = result.presets;
+  persistPresets();
+  renderPresets();
+  presetMessage.textContent = `Saved "${presets[presets.length - 1].label}" as a quick add.`;
+});
+
+/* ---------- budget burn-down chart (shared) ---------- */
+
+function buildBurnDown(month, budget, options = {}) {
+  const totals = dailyTotals(expenses, month);
+  const days = totals.length;
+  const width = 720;
+  const height = options.height ?? 220;
+  const padding = { top: 14, right: 16, bottom: 24, left: 56 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const svg = svgElement("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    class: "detail-chart",
+    role: "img",
+    "aria-label": `Ideal and actual remaining budget across ${monthLabel(month)}`,
+  });
+  if (!days) return svg;
+  let spentCents = 0;
+  const points = totals.map((item, index) => {
+    spentCents += Math.round(item.amount * 100);
+    return { day: item.day, ideal: budget * (1 - (index + 1) / days), actual: budget - spentCents / 100 };
+  });
+  const values = points.flatMap((point) => [point.ideal, point.actual]);
+  const rawMin = Math.min(...values, 0);
+  const rawMax = Math.max(...values, budget);
+  const step = niceCeiling((rawMax - rawMin || 1) / 4);
+  const minBound = Math.floor(rawMin / step) * step;
+  const maxBound = Math.max(Math.ceil(rawMax / step) * step, minBound + step);
+  const xAt = (index) => padding.left + (days <= 1 ? plotWidth / 2 : (index / (days - 1)) * plotWidth);
+  const yAt = (value) => padding.top + plotHeight - ((value - minBound) / (maxBound - minBound)) * plotHeight;
+
+  for (let value = minBound; value <= maxBound + 0.001; value += step) {
+    const lineY = yAt(value);
+    svg.append(svgElement("line", {
+      x1: padding.left, x2: width - padding.right, y1: lineY, y2: lineY,
+      class: Math.abs(value) < 0.001 ? "trend-axis-line" : "trend-grid",
+    }));
+    const label = svgElement("text", { x: padding.left - 8, y: lineY + 3.5, class: "trend-y-label", "text-anchor": "end" });
+    label.textContent = shortMoney(value);
+    svg.append(label);
+  }
+
+  svg.append(svgElement("polyline", {
+    points: points.map((point, index) => `${xAt(index)},${yAt(point.ideal)}`).join(" "),
+    class: "burn-ideal",
+  }));
+  svg.append(svgElement("polyline", {
+    points: points.map((point, index) => `${xAt(index)},${yAt(point.actual)}`).join(" "),
+    class: "burn-actual",
+  }));
+
+  const labelStep = Math.max(1, Math.round(days / 6));
+  points.forEach((point, index) => {
+    if (index % labelStep !== 0 && index !== points.length - 1) return;
+    const label = svgElement("text", { x: xAt(index), y: height - 6, class: "trend-x-label", "text-anchor": "middle" });
+    label.textContent = String(Number(point.day.slice(8, 10)));
+    svg.append(label);
+  });
+  return svg;
+}
+
+function burnLegend() {
+  const legend = document.createElement("div");
+  legend.className = "burn-legend";
+  for (const [className, label] of [["burn-key--ideal", "Ideal pace (budget spread over the month)"], ["burn-key--actual", "Actual remaining"]]) {
+    const item = document.createElement("span");
+    item.className = `burn-key ${className}`;
+    item.textContent = label;
+    legend.append(item);
+  }
+  return legend;
+}
+
+/* ---------- usage panel expansion ---------- */
+
+function closeUsageDetail() {
+  usageDetail.hidden = true;
+  usageDetail.replaceChildren();
+  usageToggle.setAttribute("aria-expanded", "false");
+  usageToggle.textContent = "Show budget breakdown";
+}
+
+function renderUsageDetail() {
+  usageDetail.replaceChildren();
+  const month = monthInput.value;
+  const budget = currentBudget();
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value);
+  const section = document.createElement("section");
+  section.className = "detail-card";
+  const header = document.createElement("header");
+  header.className = "detail-head";
+  const heading = document.createElement("div");
+  const kicker = document.createElement("p");
+  kicker.className = "section-kicker";
+  kicker.textContent = "Monthly budget";
+  const title = document.createElement("h3");
+  title.textContent = "Ideal spending pace vs what actually happened";
+  heading.append(kicker, title);
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "detail-close";
+  close.setAttribute("aria-label", "Close budget breakdown");
+  close.textContent = "×";
+  close.addEventListener("click", closeUsageDetail);
+  header.append(heading, close);
+  const body = document.createElement("div");
+  body.className = "detail-body";
+  if (budget === null) {
+    buildPrompt(body, "Set a monthly budget for this month to see the breakdown.");
+  } else {
+    const totals = dailyTotals(expenses, month);
+    const days = totals.length;
+    const isCurrent = month === today.slice(0, 7);
+    const elapsed = isCurrent ? Math.min(Number(today.slice(8, 10)), days) : days;
+    const daysLeft = Math.max(days - elapsed, 0);
+    body.append(statRow([
+      statTile("Budget", currency.format(budget)),
+      statTile("Spent so far", currency.format(summary.monthlySpent)),
+      statTile("Remaining", currency.format(summary.monthlyRemaining), summary.monthlyRemaining < 0 ? "danger" : "safe"),
+      statTile("Days left", String(daysLeft)),
+    ]));
+    body.append(buildBurnDown(month, budget));
+    body.append(burnLegend());
+    body.append(noteLine("The dashed line is the ideal remaining budget if spending were spread evenly. The solid line is the real remaining budget after each recorded expense."));
+  }
+  section.append(header, body);
+  usageDetail.append(section);
+  usageDetail.hidden = false;
+}
+
+usageToggle.addEventListener("click", () => {
+  if (usageDetail.hidden) renderUsageDetail();
+  else closeUsageDetail();
+});
+
+/* ---------- budget pace card on the insights page ---------- */
+
+function renderPace() {
+  const month = monthInput.value;
+  const budget = currentBudget();
+  paceMonth.textContent = monthShort(month);
+  paceBody.replaceChildren();
+  if (budget === null) {
+    buildPacePrompt();
+    return;
+  }
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget, month, dayInput.value);
+  const totals = dailyTotals(expenses, month);
+  const days = totals.length;
+  const isCurrentMonth = month === today.slice(0, 7);
+  const elapsed = isCurrentMonth ? Math.min(Number(today.slice(8, 10)), days) : days;
+  const average = elapsed ? summary.monthlySpent / elapsed : 0;
+  const projected = average * days;
+  const difference = budget - projected;
+  paceBody.append(statRow([
+    statTile("Budget", currency.format(budget)),
+    statTile("Spent so far", currency.format(summary.monthlySpent)),
+    statTile("Average per day", currency.format(average)),
+    statTile("Projected month total", currency.format(projected)),
+  ]));
+  paceBody.append(statRow([
+    statTile("Projection", difference >= 0 ? `Under by ${currency.format(difference)}` : `Over by ${currency.format(Math.abs(difference))}`, difference >= 0 ? "safe" : "danger"),
+    statTile("Days with spending", `${totals.filter((item) => item.amount > 0).length} of ${elapsed}`),
+  ]));
+  paceBody.append(buildBurnDown(month, budget, { height: 210 }));
+  paceBody.append(burnLegend());
+  paceBody.append(noteLine(difference >= 0
+    ? "At the current daily average, the month would end below the budget. This is a projection, not a guarantee."
+    : "At the current daily average, the month would end above the budget. Reduce daily spending or adjust the budget."));
+}
+
+function buildPacePrompt() {
+  const prompt = document.createElement("p");
+  prompt.className = "detail-prompt";
+  prompt.textContent = "Set a monthly budget for this month to compare the ideal pace with actual spending.";
+  paceBody.append(prompt);
+}
+
+/* ---------- history list size ---------- */
+
+function renderHistory(visible) {
+  const limit = 10;
+  const shown = showAllHistory ? visible : visible.slice(0, limit);
   list.replaceChildren();
-  const visible = expenses.filter((expense) => expense.date.startsWith(month))
-    .sort((a, b) => b.date.localeCompare(a.date));
-  for (const expense of visible) {
+  for (const expense of shown) {
     const item = document.createElement("li");
     item.className = "expense-row";
     const icon = document.createElement("span");
@@ -983,10 +1227,63 @@ function render() {
     empty.append(title, hint);
     list.append(empty);
   }
+  historyToggle.hidden = visible.length <= limit;
+  historyToggle.textContent = showAllHistory ? "Show fewer" : `Show all ${visible.length} entries`;
+}
+
+historyToggle.addEventListener("click", () => {
+  showAllHistory = !showAllHistory;
+  render();
+});
+
+function renderUsage(summary, budget) {
+  if (budget === null) {
+    usagePercent.textContent = "—";
+    usageCaption.textContent = "Set a budget to see progress";
+    usageBar.style.width = "0%";
+    usageBudget.textContent = "—";
+    usagePanel.classList.remove("warn", "over");
+    usagePanel.querySelector(".usage-track").setAttribute("aria-label", "Monthly budget not set");
+    return;
+  }
+  const percent = budget > 0 ? summary.monthlySpent / budget * 100 : 0;
+  usagePercent.textContent = `${Math.round(percent)}%`;
+  usageCaption.textContent = "of this month's budget used";
+  usageBar.style.width = `${Math.min(percent, 100)}%`;
+  usageBudget.textContent = currency.format(budget);
+  usagePanel.classList.toggle("warn", percent >= 75 && percent < 100);
+  usagePanel.classList.toggle("over", percent >= 100);
+  usagePanel.querySelector(".usage-track").setAttribute(
+    "aria-label",
+    `${Math.round(percent)} percent of the monthly budget used, ${currency.format(summary.monthlySpent)} of ${currency.format(budget)}`,
+  );
+}
+
+function render() {
+  updateMonthButton();
+  const month = monthInput.value;
+  const day = dayInput.value;
+  const budget = currentBudget();
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, day);
+  setMetric("balance", summary.balance, settings.openingBalance !== null);
+  setMetric("monthly-remaining", summary.monthlyRemaining, budget !== null);
+  setMetric("daily-budget", summary.dailyBudget, budget !== null);
+  setMetric("daily-remaining", summary.dailyRemaining, budget !== null);
+  document.querySelector("#monthly-spent").textContent = currency.format(summary.monthlySpent);
+  renderUsage(summary, budget);
+  document.querySelector("#daily-spent").textContent = budget === null
+    ? "Set a monthly budget to see your daily allowance."
+    : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
+
+  const visible = expenses.filter((expense) => expense.date.startsWith(month))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  renderHistory(visible);
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
   renderTrend(month);
   renderCalendarBlock();
   renderPie(month);
+  renderPace();
+  if (!usageDetail.hidden) renderUsageDetail();
   if (openPanel) renderOpenPanel();
 }
 

@@ -178,6 +178,38 @@ export function removeExpense(expenses, id) {
   return expenses.filter((expense) => expense.id !== id);
 }
 
+export function validatePreset(input) {
+  const amount = calculateAmount(input.amount);
+  if (amount === null) {
+    return { valid: false, error: "Enter a positive amount or a valid calculation for the quick add." };
+  }
+  if (!CATEGORIES.includes(input.category)) {
+    return { valid: false, error: "Choose a category for the quick add." };
+  }
+  const note = String(input.note || "").trim();
+  if (note.length > 100) {
+    return { valid: false, error: "Note must be 100 characters or fewer." };
+  }
+  const label = String(input.label || "").trim() || note || input.category;
+  if (label.length > 40) {
+    return { valid: false, error: "Quick add name must be 40 characters or fewer." };
+  }
+  return {
+    valid: true,
+    value: { amount: Math.round(amount * 100) / 100, category: input.category, note, label },
+  };
+}
+
+export function addPreset(presets, input, id) {
+  const result = validatePreset(input);
+  if (!result.valid) return result;
+  return { valid: true, presets: [...presets, { id, ...result.value }] };
+}
+
+export function removePreset(presets, id) {
+  return presets.filter((preset) => preset.id !== id);
+}
+
 export function totalForMonth(expenses, month) {
   return expenses.filter((expense) => expense.date.startsWith(month))
     .reduce((sum, expense) => sum + cents(expense.amount), 0) / 100;

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
   validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals, balanceTrend,
+  validatePreset, addPreset, removePreset,
   CATEGORIES, CATEGORY_ICONS,
 } from "../src/budget.js";
 
@@ -145,4 +146,24 @@ test("balance trend subtracts spending day by day from the opening balance", () 
   assert.equal(series[9].balance, 350);
   assert.equal(series[29].balance, 350);
   assert.deepEqual(balanceTrend(expenses, 500, "not-a-month"), []);
+});
+
+test("quick add presets validate the amount, category and name", () => {
+  const valid = validatePreset({ amount: "12+3.5", category: "Food", note: "Lunch set" });
+  assert.equal(valid.valid, true);
+  assert.equal(valid.value.amount, 15.5);
+  assert.equal(valid.value.label, "Lunch set");
+  assert.equal(validatePreset({ amount: "0", category: "Food" }).valid, false);
+  assert.equal(validatePreset({ amount: "10", category: "Nope" }).valid, false);
+  assert.equal(validatePreset({ amount: "10", category: "Food", label: "x".repeat(41) }).valid, false);
+});
+
+test("quick add presets can be added and removed", () => {
+  const created = addPreset([], { amount: "4.5", category: "Food", note: "Coffee" }, "p1");
+  assert.equal(created.valid, true);
+  assert.equal(created.presets.length, 1);
+  assert.deepEqual(created.presets[0], { id: "p1", amount: 4.5, category: "Food", note: "Coffee", label: "Coffee" });
+  const updated = addPreset(created.presets, { amount: "9", category: "Transport" }, "p2");
+  assert.equal(updated.presets[1].label, "Transport");
+  assert.deepEqual(removePreset(updated.presets, "p1"), [updated.presets[1]]);
 });
