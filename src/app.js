@@ -1,4 +1,4 @@
-import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
+﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, dailyIncomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -43,6 +43,14 @@ const usageToggle = document.querySelector("#usage-toggle");
 const usageDetail = document.querySelector("#usage-detail");
 const paceMonth = document.querySelector("#pace-month");
 const paceBody = document.querySelector("#pace-body");
+const trendTitle = document.querySelector("#trend-title");
+const trendKicker = trendTitle.closest(".panel-heading").querySelector(".section-kicker");
+const chartSurfaceLabel = document.querySelector(".chart-surface-head span");
+const chartSurfaceHint = document.querySelector("#chart-surface-hint");
+const paceTitle = document.querySelector("#pace-title");
+const paceKicker = paceTitle.closest(".panel-heading").querySelector(".section-kicker");
+const piePanel = document.querySelector(".pie-panel");
+const incomePanel = document.querySelector(".income-panel");
 const modeSwitch = document.querySelector(".mode-switch");
 const typeSwitch = document.querySelector("#type-switch");
 const budgetClear = document.querySelector("#budget-clear");
@@ -162,6 +170,7 @@ function setFormMode(mode) {
   }
   document.body.classList.toggle("theme-income", isIncomeMode);
   applyPageMode();
+  applyBodyTheme();
   render();
 }
 
@@ -180,10 +189,14 @@ const CARD_COPY = {
   income: {
     balance: ["Balance", "Starting balance + income − all spending"],
     remaining: ["Income this month", "Salary, scholarship and other income"],
-    "daily-budget": ["Average daily income", "Income spread over the days so far"],
-    "daily-remaining": ["Income on this day", "Income recorded on the selected day"],
+    "daily-budget": ["Spent this month", "Money spent against this month's income"],
+    "daily-remaining": ["Saved this month", "Income minus spending this month"],
   },
 };
+
+function applyBodyTheme() {
+  document.body.classList.toggle("theme-income", formMode === "income" && !pageData.hidden);
+}
 
 function applyPageMode() {
   const isIncomeMode = formMode === "income";
@@ -327,23 +340,35 @@ function niceCeiling(value) {
 }
 
 function renderTrend(month) {
-  const totals = dailyTotals(expenses, month);
+  const incomeMode = formMode === "income";
+  const totals = incomeMode ? dailyIncomeTotals(expenses, month) : dailyTotals(expenses, month);
   const days = totals.length;
-  const monthSpent = totals.reduce((sum, item) => sum + item.amount, 0);
-  const daysWithSpending = totals.filter((item) => item.amount > 0).length;
+  const monthTotal = totals.reduce((sum, item) => sum + item.amount, 0);
+  const activeDays = totals.filter((item) => item.amount > 0).length;
   const highest = totals.reduce((best, item) => (item.amount > best.amount ? item : best), { day: `${month}-01`, amount: 0 });
   const elapsedDays = month === today.slice(0, 7) ? Math.min(Number(today.slice(8, 10)), days) : days;
   const budget = currentBudget();
   const dailyBudget = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value).dailyBudget;
 
   trendMonth.textContent = monthShort(month);
+  chartSurfaceLabel.textContent = incomeMode ? "Income trend" : "Spending trend";
+  chartSurfaceHint.textContent = incomeMode ? "income received each day" : "Dashed line = fixed daily budget";
+  trendTitle.textContent = incomeMode ? "How much you received each day" : "How much you spent each day";
+  trendKicker.textContent = incomeMode ? "Daily income" : "Daily spending";
   trendStats.replaceChildren();
-  const stats = [
-    ["Spent this month", currency.format(monthSpent)],
-    ["Average per day", currency.format(elapsedDays ? monthSpent / elapsedDays : 0)],
-    ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
-    ["Days with spending", days ? `${daysWithSpending} of ${elapsedDays}` : "—"],
-  ];
+  const stats = incomeMode
+    ? [
+      ["Income this month", currency.format(monthTotal)],
+      ["Average per day", currency.format(elapsedDays ? monthTotal / elapsedDays : 0)],
+      ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
+      ["Days with income", days ? `${activeDays} of ${elapsedDays}` : "—"],
+    ]
+    : [
+      ["Spent this month", currency.format(monthTotal)],
+      ["Average per day", currency.format(elapsedDays ? monthTotal / elapsedDays : 0)],
+      ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
+      ["Days with spending", days ? `${activeDays} of ${elapsedDays}` : "—"],
+    ];
   for (const [label, value] of stats) {
     const item = document.createElement("div");
     item.className = "trend-stat";
@@ -387,7 +412,7 @@ function renderTrend(month) {
     trendChart.append(label);
   }
 
-  if (budget !== null && dailyBudget > 0 && dailyBudget <= yMaximum) {
+  if (!incomeMode && budget !== null && dailyBudget > 0 && dailyBudget <= yMaximum) {
     const budgetY = yAt(dailyBudget);
     trendChart.append(svgElement("line", {
       x1: padding.left, x2: width - padding.right, y1: budgetY, y2: budgetY, class: "trend-budget-line",
@@ -401,15 +426,15 @@ function renderTrend(month) {
 
   const points = totals.map((item, index) => [xAt(index), yAt(item.amount)]);
   const areaPath = `M ${points[0][0]},${yAt(0)} L ${points.map(([x, y]) => `${x},${y}`).join(" L ")} L ${points[points.length - 1][0]},${yAt(0)} Z`;
-  trendChart.append(svgElement("path", { d: areaPath, class: "trend-area" }));
+  trendChart.append(svgElement("path", { d: areaPath, class: incomeMode ? "trend-area is-income" : "trend-area" }));
   trendChart.append(svgElement("polyline", {
     points: points.map(([x, y]) => `${x},${y}`).join(" "),
-    class: "trend-line",
+    class: incomeMode ? "trend-line is-income" : "trend-line",
   }));
 
   for (const [index, item] of totals.entries()) {
     if (!item.amount) continue;
-    const dot = svgElement("circle", { cx: xAt(index), cy: yAt(item.amount), r: 3.4, class: "trend-dot" });
+    const dot = svgElement("circle", { cx: xAt(index), cy: yAt(item.amount), r: 3.4, class: incomeMode ? "trend-dot is-income" : "trend-dot" });
     const title = svgElement("title");
     title.textContent = `${dayLabel(item.day)} · ${currency.format(item.amount)}`;
     dot.append(title);
@@ -424,10 +449,14 @@ function renderTrend(month) {
   }
 
   trendChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  trendChart.setAttribute("aria-label", `${monthShort(month)} daily spending: total ${currency.format(monthSpent)}, highest day ${currency.format(highest.amount)} on ${dayLabel(highest.day)}, ${daysWithSpending} days with spending.`);
-  trendDesc.textContent = budget === null
-    ? `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. Set a monthly budget to compare each day with the daily allowance.`
-    : `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. The dashed line is the fixed daily budget of ${currency.format(dailyBudget)}.`;
+  trendChart.setAttribute("aria-label", incomeMode
+    ? `${monthShort(month)} daily income: total ${currency.format(monthTotal)}, highest day ${currency.format(highest.amount)} on ${dayLabel(highest.day)}, ${activeDays} days with income.`
+    : `${monthShort(month)} daily spending: total ${currency.format(monthTotal)}, highest day ${currency.format(highest.amount)} on ${dayLabel(highest.day)}, ${activeDays} days with spending.`);
+  trendDesc.textContent = incomeMode
+    ? `Each point is one day's income for ${monthShort(month)}. Income is added to the balance and is never counted against the budget.`
+    : budget === null
+      ? `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. Set a monthly budget to compare each day with the daily allowance.`
+      : `Each point is one day's total for ${monthShort(month)}. Hover a point to see the exact amount. The dashed line is the fixed daily budget of ${currency.format(dailyBudget)}.`;
 }
 
 function populateBudgetForm() {
@@ -463,12 +492,12 @@ const PANEL_CONFIG = {
     title: () => (formMode === "income" ? `Income in ${monthLabel(monthInput.value)}` : `Budget pace for ${monthLabel(monthInput.value)}`),
   },
   "daily-budget": {
-    kicker: () => (formMode === "income" ? "Average daily income" : "Daily budget"),
-    title: () => (formMode === "income" ? "Income spread across the days so far" : "How the daily budget is calculated"),
+    kicker: () => (formMode === "income" ? "Spent this month" : "Daily budget"),
+    title: () => (formMode === "income" ? `Where this month's spending went` : "How the daily budget is calculated"),
   },
   "daily-remaining": {
-    kicker: () => (formMode === "income" ? "Income on this day" : "Daily remaining"),
-    title: () => `${formMode === "income" ? "Income on" : "Spending on"} ${dayLabel(dayInput.value)}`,
+    kicker: () => (formMode === "income" ? "Saved this month" : "Daily remaining"),
+    title: () => (formMode === "income" ? "Income minus spending this month" : `Spending on ${dayLabel(dayInput.value)}`),
   },
 };
 
@@ -591,12 +620,12 @@ function lineChart(points, options = {}) {
   if (options.area) {
     svg.append(svgElement("path", {
       d: `M ${coordinates[0][0]},${yAt(Math.max(minBound, 0))} L ${coordinates.map(([x, y]) => `${x},${y}`).join(" L ")} L ${coordinates[coordinates.length - 1][0]},${yAt(Math.max(minBound, 0))} Z`,
-      class: options.tone === "warm" ? "trend-area is-warm" : "trend-area",
+      class: options.tone === "warm" ? "trend-area is-warm" : options.tone === "income" ? "trend-area is-income" : "trend-area",
     }));
   }
   svg.append(svgElement("polyline", {
     points: coordinates.map(([x, y]) => `${x},${y}`).join(" "),
-    class: options.tone === "warm" ? "trend-line is-warm" : "trend-line",
+    class: options.tone === "warm" ? "trend-line is-warm" : options.tone === "income" ? "trend-line is-income" : "trend-line",
   }));
   points.forEach((point, index) => {
     const dot = svgElement("circle", {
@@ -702,36 +731,53 @@ function buildIncomePanelBody(key, body, month, summary, elapsedDays) {
   }
 
   if (key === "daily-budget") {
-    if (!total) {
-      buildPrompt(body, "No income recorded for this month yet.");
+    const categories = categoryTotals(expenses, month).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount);
+    const spent = categories.reduce((sum, item) => sum + item.amount, 0);
+    if (!spent) {
+      buildPrompt(body, "No spending recorded for this month yet.");
       return;
     }
-    const byDay = new Map();
-    for (const entry of expenses) {
-      if (!isIncome(entry) || !entry.date.startsWith(month)) continue;
-      byDay.set(entry.date, (byDay.get(entry.date) ?? 0) + Math.round(Number(entry.amount) * 100));
-    }
-    const best = [...byDay.entries()].sort((a, b) => b[1] - a[1])[0];
     body.append(statRow([
-      statTile("Income this month", currency.format(total)),
-      statTile("Days with income", String(byDay.size)),
-      statTile("Average per day", currency.format(elapsedDays ? total / elapsedDays : 0)),
-      statTile("Largest day", `${currency.format(best[1] / 100)} · ${dayLabel(best[0])}`),
+      statTile("Spent this month", currency.format(spent)),
+      statTile("Income this month", currency.format(summary.monthlyIncome)),
+      statTile("Share of income", summary.monthlyIncome > 0 ? `${Math.round(spent / summary.monthlyIncome * 100)}%` : "—"),
+      statTile("Categories used", String(categories.length)),
     ]));
-    body.append(noteLine(`Income is spread over ${elapsedDays} elapsed day${elapsedDays === 1 ? "" : "s"} in ${monthLabel(month)}. It is added to the balance and is never counted against the budget.`));
+    const list = document.createElement("ul");
+    list.className = "detail-expense-list";
+    for (const item of categories) {
+      const row = document.createElement("li");
+      row.className = "detail-expense";
+      const icon = document.createElement("span");
+      icon.className = "detail-expense-icon";
+      icon.textContent = CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.Other;
+      icon.setAttribute("aria-hidden", "true");
+      const details = document.createElement("span");
+      details.className = "detail-expense-details";
+      const name = document.createElement("strong");
+      name.textContent = item.category;
+      const meta = document.createElement("span");
+      meta.textContent = `${Math.round(item.amount / spent * 100)}% of this month's spending`;
+      details.append(name, meta);
+      const amount = document.createElement("strong");
+      amount.className = "detail-expense-amount";
+      amount.textContent = currency.format(item.amount);
+      row.append(icon, details, amount);
+      list.append(row);
+    }
+    body.append(list);
     return;
   }
 
   if (key === "daily-remaining") {
-    const day = dayInput.value;
-    const dayIncome = expenses.filter((entry) => isIncome(entry) && entry.date === day);
-    const dayTotal = dayIncome.reduce((sum, entry) => sum + Number(entry.amount), 0);
+    const saved = summary.monthlyIncome - summary.monthlySpent;
     body.append(statRow([
-      statTile(`Income on ${dayLabel(day)}`, currency.format(dayTotal)),
-      statTile("Records", String(dayIncome.length)),
-      statTile("Income this month", currency.format(total)),
+      statTile("Income this month", currency.format(summary.monthlyIncome)),
+      statTile("Spent this month", currency.format(summary.monthlySpent)),
+      statTile("Saved this month", currency.format(saved), saved < 0 ? "danger" : "safe"),
+      statTile("Savings rate", summary.monthlyIncome > 0 ? `${Math.round(saved / summary.monthlyIncome * 100)}%` : "—", saved < 0 ? "danger" : "safe"),
     ]));
-    body.append(expenseListFor(day, "income"));
+    body.append(noteLine("Income minus spending for this month. A negative value means recorded spending is higher than recorded income."));
     return;
   }
 }
@@ -868,7 +914,7 @@ function noteLine(message) {
   return note;
 }
 
-function buildCalendar(month, totals, dailyBudget) {
+function buildCalendar(month, totals, dailyBudget, kind = "expense") {
   const wrapper = document.createElement("div");
   wrapper.className = "calendar";
   const weekdays = document.createElement("div");
@@ -904,6 +950,7 @@ function buildCalendar(month, totals, dailyBudget) {
       cell.append(amount);
     }
     if (item.amount <= 0) cell.classList.add("is-none");
+    else if (kind === "income") cell.classList.add("is-income-day");
     else if (dailyBudget !== null && item.amount > dailyBudget) {
       cell.classList.add("is-over");
       if (dailyBudget > 0 && item.amount > dailyBudget * 2) cell.classList.add("is-over-heavy");
@@ -915,7 +962,9 @@ function buildCalendar(month, totals, dailyBudget) {
     } else if (dailyBudget !== null) cell.classList.add("is-safe");
     if (item.day === today) cell.classList.add("is-today");
     if (item.day === calendarDay) cell.classList.add("is-selected");
-    const label = `${dayLabel(item.day)}: ${currency.format(item.amount)}${dailyBudget !== null && item.amount > dailyBudget ? ", over the daily budget" : ""}`;
+    const label = kind === "income"
+      ? `${dayLabel(item.day)}: income ${currency.format(item.amount)}`
+      : `${dayLabel(item.day)}: ${currency.format(item.amount)}${dailyBudget !== null && item.amount > dailyBudget ? ", over the daily budget" : ""}`;
     cell.setAttribute("aria-label", label);
     grid.append(cell);
   }
@@ -923,12 +972,14 @@ function buildCalendar(month, totals, dailyBudget) {
   return wrapper;
 }
 
-function buildCalendarLegend(hasBudget) {
+function buildCalendarLegend(hasBudget, kind = "expense") {
   const legend = document.createElement("div");
   legend.className = "calendar-legend";
-  const entries = hasBudget
-    ? [["is-safe", "Within daily budget"], ["is-over", "Over daily budget"], ["is-none", "No spending"]]
-    : [["is-none", "No spending"]];
+  const entries = kind === "income"
+    ? [["is-income-day", "Day with income"], ["is-none", "No income"]]
+    : hasBudget
+      ? [["is-safe", "Within daily budget"], ["is-over", "Over daily budget"], ["is-none", "No spending"]]
+      : [["is-none", "No spending"]];
   for (const [className, label] of entries) {
     const item = document.createElement("span");
     item.className = `legend-item ${className}`;
@@ -950,13 +1001,13 @@ document.addEventListener("keydown", (event) => {
 });
 
 /* ---------- insights: calendar and category share ---------- */
-function renderCalendarInto(wrap, legendEl, dayBoxEl, month = monthInput.value) {
-  const totals = dailyTotals(expenses, month);
+function renderCalendarInto(wrap, legendEl, dayBoxEl, month = monthInput.value, kind = "expense") {
+  const totals = kind === "income" ? dailyIncomeTotals(expenses, month) : dailyTotals(expenses, month);
   const budget = currentBudget();
   const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value);
   const dailyBudget = budget === null ? null : summary.dailyBudget;
   wrap.replaceChildren();
-  legendEl.replaceChildren(...buildCalendarLegend(budget !== null).children);
+  legendEl.replaceChildren(...buildCalendarLegend(budget !== null, kind).children);
   dayBoxEl.replaceChildren();
   if (!totals.length) {
     const empty = document.createElement("p");
@@ -965,12 +1016,14 @@ function renderCalendarInto(wrap, legendEl, dayBoxEl, month = monthInput.value) 
     wrap.append(empty);
     return;
   }
-  wrap.append(buildCalendar(month, totals, dailyBudget));
+  wrap.append(buildCalendar(month, totals, dailyBudget, kind));
   if (calendarDay) {
     const heading = document.createElement("h4");
     const dayTotal = totals.find((item) => item.day === calendarDay)?.amount ?? 0;
-    heading.textContent = `${dayLabel(calendarDay)} · ${currency.format(dayTotal)}${dailyBudget !== null ? ` · daily budget ${currency.format(dailyBudget)}` : ""}`;
-    dayBoxEl.append(heading, expenseListFor(calendarDay));
+    heading.textContent = kind === "income"
+      ? `${dayLabel(calendarDay)} · income ${currency.format(dayTotal)}`
+      : `${dayLabel(calendarDay)} · ${currency.format(dayTotal)}${dailyBudget !== null ? ` · daily budget ${currency.format(dailyBudget)}` : ""}`;
+    dayBoxEl.append(heading, expenseListFor(calendarDay, kind === "income" ? "income" : "expense"));
   }
 }
 
@@ -1064,11 +1117,9 @@ function showPage(page) {
   pageData.hidden = isInsights;
   pageInsights.hidden = !isInsights;
   for (const tab of tabs) tab.setAttribute("aria-selected", String(tab.dataset.page === page));
+  applyBodyTheme();
   if (isInsights) {
-    renderTrend(monthInput.value);
-    renderPie(monthInput.value);
-    renderIncome(monthInput.value);
-    renderPace();
+    renderInsights(monthInput.value);
   } else if (openPanel) {
     renderOpenPanel();
   }
@@ -1315,9 +1366,9 @@ function renderUsageDetail() {
   const heading = document.createElement("div");
   const kicker = document.createElement("p");
   kicker.className = "section-kicker";
-  kicker.textContent = "Monthly budget";
+  kicker.textContent = formMode === "income" ? "Income" : "Monthly budget";
   const title = document.createElement("h3");
-  title.textContent = "Month at a glance and spending pace";
+  title.textContent = formMode === "income" ? "Income at a glance" : "Month at a glance and spending pace";
   heading.append(kicker, title);
   const close = document.createElement("button");
   close.type = "button";
@@ -1328,7 +1379,9 @@ function renderUsageDetail() {
   header.append(heading, close);
   const body = document.createElement("div");
   body.className = "detail-body";
-  if (budget === null) {
+  if (formMode === "income") {
+    buildIncomeUsage(body, month, summary);
+  } else if (budget === null) {
     buildPrompt(body, "Set a monthly budget for this month to see the breakdown.");
   } else {
     const totals = dailyTotals(expenses, month);
@@ -1371,6 +1424,51 @@ function renderUsageDetail() {
   section.append(header, body);
   usageDetail.append(section);
   usageDetail.hidden = false;
+}
+
+function calendarSection(month, kind, onChange) {
+  const block = document.createElement("div");
+  block.className = "calendar-block";
+  const head = document.createElement("div");
+  head.className = "calendar-head";
+  const title = document.createElement("h3");
+  title.textContent = kind === "income" ? "Income calendar" : "Month at a glance";
+  const legend = document.createElement("div");
+  legend.className = "calendar-legend";
+  head.append(title, legend);
+  const wrap = document.createElement("div");
+  const dayBox = document.createElement("div");
+  dayBox.className = "calendar-day-box";
+  renderCalendarInto(wrap, legend, dayBox, month, kind);
+  wrap.addEventListener("click", (event) => {
+    const cell = event.target.closest(".cal-day[data-day]");
+    if (!cell) return;
+    calendarDay = calendarDay === cell.dataset.day ? null : cell.dataset.day;
+    onChange();
+  });
+  block.append(head, wrap, dayBox);
+  return block;
+}
+
+function buildIncomeUsage(body, month, summary) {
+  const totals = dailyIncomeTotals(expenses, month);
+  const incomeDays = totals.filter((item) => item.amount > 0).length;
+  const saved = summary.monthlyIncome - summary.monthlySpent;
+  body.append(statRow([
+    statTile("Income this month", currency.format(summary.monthlyIncome)),
+    statTile("Spent this month", currency.format(summary.monthlySpent)),
+    statTile("Saved this month", currency.format(saved), saved < 0 ? "danger" : "safe"),
+    statTile("Days with income", String(incomeDays)),
+  ]));
+  body.append(calendarSection(month, "income", renderUsageDetail));
+  body.append(chartSurface(
+    "Income trend",
+    "income received each day",
+    lineChart(totals.map((item) => ({ label: item.day, value: item.amount })), {
+      label: `Daily income for ${monthLabel(month)}`, area: true, tone: "income", height: 210,
+    }),
+  ));
+  body.append(noteLine("Income adds to the balance only. It is never counted against the monthly budget."));
 }
 
 usageToggle.addEventListener("click", () => {
@@ -1453,11 +1551,79 @@ function renderIncome(month) {
 }
 
 
+function chartSurface(labelText, hintText, node) {
+  const surface = document.createElement("div");
+  surface.className = "chart-surface";
+  const head = document.createElement("div");
+  head.className = "chart-surface-head";
+  const label = document.createElement("span");
+  label.textContent = labelText;
+  const hint = document.createElement("strong");
+  hint.textContent = hintText;
+  head.append(label, hint);
+  surface.append(head, node);
+  return surface;
+}
+
+function renderIncomePace(month) {
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, 0, month, dayInput.value);
+  const income = summary.monthlyIncome;
+  const spent = summary.monthlySpent;
+  const saved = income - spent;
+  const rate = income > 0 ? Math.round((saved / income) * 100) : null;
+  const totals = dailyTotals(expenses, month);
+  const isCurrentMonth = month === today.slice(0, 7);
+  const elapsed = isCurrentMonth ? Math.min(Number(today.slice(8, 10)), totals.length) : totals.length;
+  paceBody.append(statRow([
+    statTile("Income this month", currency.format(income)),
+    statTile("Spent this month", currency.format(spent)),
+    statTile("Saved this month", currency.format(saved), saved < 0 ? "danger" : "safe"),
+    statTile("Savings rate", rate === null ? "—" : `${rate}%`, rate !== null && rate < 0 ? "danger" : "safe"),
+  ]));
+  if (!income && !spent) {
+    buildPacePrompt();
+    return;
+  }
+  const incomeDays = dailyIncomeTotals(expenses, month);
+  let cumulativeIncome = 0;
+  let cumulativeSpent = 0;
+  const series = incomeDays.map((item, index) => {
+    cumulativeIncome += item.amount;
+    cumulativeSpent += totals[index]?.amount ?? 0;
+    return { label: item.day, value: cumulativeIncome - cumulativeSpent };
+  });
+  paceBody.append(chartSurface(
+    "Cumulative savings",
+    "income minus spending, day by day",
+    lineChart(series, { label: `Cumulative savings across ${monthLabel(month)}`, area: true, height: 210 }),
+  ));
+  paceBody.append(noteLine(income > 0
+    ? `Across ${elapsed} elapsed day${elapsed === 1 ? "" : "s"}, you received ${currency.format(income)} and spent ${currency.format(spent)}. This comparison is a snapshot, not a forecast.`
+    : "No income is recorded for this month yet. Switch the form to Income to add a salary, scholarship or other income."));
+}
+
+function renderInsights(month) {
+  const incomeMode = formMode === "income";
+  piePanel.hidden = incomeMode;
+  incomePanel.hidden = !incomeMode;
+  renderTrend(month);
+  renderPace();
+  if (incomeMode) renderIncome(month);
+  else renderPie(month);
+}
+
 function renderPace() {
   const month = monthInput.value;
   const budget = currentBudget();
+  const incomeMode = formMode === "income";
   paceMonth.textContent = monthShort(month);
   paceBody.replaceChildren();
+  paceKicker.textContent = incomeMode ? "Income vs spending" : "Budget pace";
+  paceTitle.textContent = incomeMode ? "Are you earning more than you spend?" : "Will the budget last the month?";
+  if (incomeMode) {
+    renderIncomePace(month);
+    return;
+  }
   if (budget === null) {
     buildPacePrompt();
     return;
@@ -1623,8 +1789,8 @@ function render() {
   if (formMode === "income") {
     setMetric("balance", summary.balance, hasRecords);
     setMetric("monthly-remaining", summary.monthlyIncome, hasRecords);
-    setMetric("daily-budget", elapsedDays ? summary.monthlyIncome / elapsedDays : 0, hasRecords);
-    setMetric("daily-remaining", dayIncome, hasRecords);
+    setMetric("daily-budget", summary.monthlySpent, hasRecords);
+    setMetric("daily-remaining", summary.monthlyIncome - summary.monthlySpent, hasRecords);
   } else {
     setMetric("balance", summary.balance, settings.openingBalance !== null);
     setMetric("monthly-remaining", summary.monthlyRemaining, budget !== null);
@@ -1634,7 +1800,7 @@ function render() {
   document.querySelector("#monthly-spent").textContent = currency.format(summary.monthlySpent);
   renderUsage(summary, budget);
   document.querySelector("#daily-spent").textContent = formMode === "income"
-    ? `${currency.format(dayIncome)} income recorded on ${day} · income is added to the balance, not the budget`
+    ? `${currency.format(summary.monthlyIncome - summary.monthlySpent)} saved this month · income is added to the balance, not the budget`
     : budget === null
       ? "Set a monthly budget to see your daily allowance."
       : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
@@ -1644,10 +1810,7 @@ function render() {
     .sort((a, b) => b.date.localeCompare(a.date));
   renderHistory(visible);
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
-  renderTrend(month);
-  renderPie(month);
-  renderIncome(month);
-  renderPace();
+  renderInsights(month);
   if (!usageDetail.hidden) renderUsageDetail();
   if (openPanel) renderOpenPanel();
 }

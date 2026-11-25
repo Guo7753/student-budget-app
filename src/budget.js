@@ -104,6 +104,23 @@ export function dailyTotals(entries, month) {
   return totals.map(({ day, amount }) => ({ day, amount: amount / 100 }));
 }
 
+export function dailyIncomeTotals(entries, month) {
+  const days = daysInMonth(month);
+  if (!days) return [];
+  const totals = Array.from({ length: days }, (_, index) => ({
+    day: `${month}-${String(index + 1).padStart(2, "0")}`,
+    amount: 0,
+  }));
+  for (const entry of entries) {
+    if (!isIncome(entry)) continue;
+    if (!entry.date.startsWith(month)) continue;
+    const bucket = totals[Number(entry.date.slice(8, 10)) - 1];
+    if (!bucket) continue;
+    bucket.amount += cents(entry.amount);
+  }
+  return totals.map(({ day, amount }) => ({ day, amount: amount / 100 }));
+}
+
 export function balanceTrend(entries, openingBalance, month) {
   const totals = dailyTotals(entries, month);
   if (!totals.length) return [];

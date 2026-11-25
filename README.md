@@ -4,16 +4,20 @@ A small browser-based expense tracker built for the CISE group assessment. The t
 
 ![Student Budget dashboard](docs/images/dashboard-desktop.png)
 
-The application has two pages:
+The application has two pages, with a sticky top bar that carries the page tabs and a single expense/income switch:
 
-- **Data** - choose the month from a calendar picker, review the four summary cards and the monthly budget bar, add an expense or an income, set the budget, and browse the month's records.
-- **Insights** - the daily spending trend, the budget pace projection, a category-share donut chart for spending, and a separate donut chart for income sources.
+- **Data** - choose the month from a calendar picker, review the four summary cards and the monthly bar, add an expense or an income, set or clear the budget, and browse the month's records.
+- **Insights** - the daily trend, the budget pace (or income-versus-spending comparison), a category-share donut for spending, and a separate donut for income sources.
 
-The same form switches between expenses and income:
+The switch controls both pages. In expense view the cards and charts describe spending and budget; in income view they describe income, spending against income, and savings:
 
-![Income mode](docs/images/dashboard-income.png)
+![Expense view](docs/images/dashboard-desktop.png)
 
-![Insights page](docs/images/dashboard-insights.png)
+![Income view](docs/images/dashboard-income.png)
+
+![Expense insights](docs/images/dashboard-insights.png)
+
+![Income insights](docs/images/dashboard-insights-income.png)
 
 ## What the application does
 

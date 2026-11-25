@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
   validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals, balanceTrend,
-  validatePreset, addPreset, removePreset, incomeTotals,
+  validatePreset, addPreset, removePreset, incomeTotals, dailyIncomeTotals,
   CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES,
 } from "../src/budget.js";
 
@@ -192,4 +192,18 @@ test("income is excluded from spending totals but increases the balance", () => 
   const income = incomeTotals(entries, "2026-11");
   assert.equal(income.find((item) => item.category === "Salary").amount, 500);
   assert.equal(INCOME_CATEGORIES.length, 6);
+});
+
+test("daily income totals keep income out of the spending series", () => {
+  const entries = [
+    { id: "e1", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "i1", type: "income", amount: 500, date: "2026-11-02", category: "Salary" },
+    { id: "i2", type: "income", amount: 100, date: "2026-11-09", category: "Refund" },
+  ];
+  const incomeDays = dailyIncomeTotals(entries, "2026-11");
+  const spendingDays = dailyTotals(entries, "2026-11");
+  assert.equal(incomeDays[1].amount, 500);
+  assert.equal(incomeDays[8].amount, 100);
+  assert.equal(spendingDays[1].amount, 20);
+  assert.equal(incomeDays.reduce((sum, item) => sum + item.amount, 0), 600);
 });
