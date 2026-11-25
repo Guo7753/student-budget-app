@@ -9,7 +9,7 @@ The application has two pages, with a sticky top bar that carries the page tabs 
 - **Data** - choose the month from a calendar picker, review the four summary cards and the monthly bar, add an expense or an income, set or clear the budget, and browse the month's records.
 - **Insights** - the daily trend, the budget pace (or income-versus-spending comparison), a category-share donut for spending, and a separate donut for income sources. The income view tints this page as well, so the active view is obvious on both pages.
 
-The switch in the sticky top bar controls both pages. In expense view the cards and charts describe spending and budget; in income view they describe income, spending against income, and savings, and the page tint changes. The "Show month heatmap & pace" control on the monthly bar opens a calendar coloured by the fixed daily budget (expense view) or by income days (income view), followed by the burn-down or income trend.
+The switch in the sticky top bar controls both pages. In expense view the cards and charts describe spending and budget; in income view they describe income, spending against income, and savings, and the page tint changes. Selecting the monthly budget card opens a calendar coloured by the fixed daily budget (expense view) or by income days (income view), followed by the burn-down or income trend.
 
 ![Expense view](docs/images/dashboard-desktop.png)
 
@@ -31,7 +31,7 @@ The switch in the sticky top bar controls both pages. In expense view the cards 
 - Summarises spending with ten icon-labelled categories and a category-share donut chart, and summarises income with six income categories and its own donut chart.
 - Plots a daily spending trend for the selected month, with the total spent, the average per day, the highest day, and a dashed line for the fixed daily budget.
 - Compares the ideal spending pace with the actual remaining budget, and projects whether the month will finish under or over budget.
-- Opens a budget breakdown from the monthly budget bar: a calendar of the month where every day is coloured against the fixed daily budget (green within, red over, with a marker as well as colour), followed by the burn-down comparison.
+- Opens a breakdown from the monthly budget card (select the card): a calendar of the month where every day is coloured against the fixed daily budget (green within, red over, with a marker as well as colour), followed by the burn-down comparison.
 - Provides expandable detail panels on the summary cards:
   - **Balance** - the balance at the end of each day, with the lowest point.
   - **Monthly remaining** - budget pace and a projection for the end of the month.

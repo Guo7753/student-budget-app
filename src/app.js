@@ -1,4 +1,4 @@
-﻿import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, dailyIncomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
+import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, incomeTotals, dailyIncomeTotals, balanceTrend, isIncome, addPreset, removePreset, CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES, INCOME_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -39,7 +39,7 @@ const presetSave = document.querySelector("#preset-save");
 const presetToggle = document.querySelector("#preset-toggle");
 const presetMessage = document.querySelector("#preset-message");
 const historyToggle = document.querySelector("#history-toggle");
-const usageToggle = document.querySelector("#usage-toggle");
+const usagePanelEl = document.querySelector(".usage-panel");
 const usageDetail = document.querySelector("#usage-detail");
 const paceMonth = document.querySelector("#pace-month");
 const paceBody = document.querySelector("#pace-body");
@@ -1350,8 +1350,8 @@ function burnLegend() {
 function closeUsageDetail() {
   usageDetail.hidden = true;
   usageDetail.replaceChildren();
-  usageToggle.setAttribute("aria-expanded", "false");
-  usageToggle.textContent = "Show month heatmap & pace";
+  usagePanelEl.setAttribute("aria-expanded", "false");
+  usagePanelEl.classList.remove("is-open");
 }
 
 function renderUsageDetail() {
@@ -1424,6 +1424,8 @@ function renderUsageDetail() {
   section.append(header, body);
   usageDetail.append(section);
   usageDetail.hidden = false;
+  usagePanelEl.setAttribute("aria-expanded", "true");
+  usagePanelEl.classList.add("is-open");
 }
 
 function calendarSection(month, kind, onChange) {
@@ -1471,7 +1473,13 @@ function buildIncomeUsage(body, month, summary) {
   body.append(noteLine("Income adds to the balance only. It is never counted against the monthly budget."));
 }
 
-usageToggle.addEventListener("click", () => {
+usagePanelEl.addEventListener("click", () => {
+  if (usageDetail.hidden) renderUsageDetail();
+  else closeUsageDetail();
+});
+usagePanelEl.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
   if (usageDetail.hidden) renderUsageDetail();
   else closeUsageDetail();
 });

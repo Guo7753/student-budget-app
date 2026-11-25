@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -138,13 +138,18 @@
 
         <div id="metric-detail" class="detail-panel" hidden></div>
 
-        <section class="panel usage-panel" aria-labelledby="usage-title">
+        <section class="panel usage-panel" aria-labelledby="usage-title" role="button" tabindex="0" aria-expanded="false" aria-controls="usage-detail">
           <div class="usage-head">
             <div>
               <p class="section-kicker">Monthly budget</p>
               <h2 id="usage-title">How much of this month's budget is used</h2>
             </div>
-            <p class="usage-figure"><strong id="usage-percent">—</strong><span id="usage-caption">Set a budget to see progress</span></p>
+            <div class="usage-head-right">
+              <p class="usage-figure"><strong id="usage-percent">—</strong><span id="usage-caption">Set a budget to see progress</span></p>
+              <span class="usage-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+              </span>
+            </div>
           </div>
           <div class="usage-track" role="img" aria-label="Share of the monthly budget used">
             <span id="usage-bar" class="usage-bar" style="width:0%"></span>
@@ -154,7 +159,7 @@
             <span><span id="usage-budget-label">Budget</span> <strong id="usage-budget">—</strong></span>
             <span id="daily-spent" class="usage-note"></span>
           </div>
-          <button id="usage-toggle" class="usage-toggle" type="button" aria-expanded="false" aria-controls="usage-detail">Show month heatmap & pace</button>
+          <p class="usage-hint">Select this card for the month heatmap and spending pace.</p>
         </section>
 
         <div id="usage-detail" class="detail-panel" hidden></div>
