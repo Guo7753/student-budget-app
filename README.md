@@ -1,4 +1,4 @@
-# Student Budget
+﻿# Student Budget
 
 A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
@@ -7,9 +7,9 @@ A small browser-based expense tracker built for the CISE group assessment. The t
 The application has two pages, with a sticky top bar that carries the page tabs and a single expense/income switch:
 
 - **Data** - choose the month from a calendar picker, review the four summary cards and the monthly bar, add an expense or an income, set or clear the budget, and browse the month's records.
-- **Insights** - the daily trend, the budget pace (or income-versus-spending comparison), a category-share donut for spending, and a separate donut for income sources.
+- **Insights** - the daily trend, the budget pace (or income-versus-spending comparison), a category-share donut for spending, and a separate donut for income sources. The income view tints this page as well, so the active view is obvious on both pages.
 
-The switch controls both pages. In expense view the cards and charts describe spending and budget; in income view they describe income, spending against income, and savings:
+The switch in the sticky top bar controls both pages. In expense view the cards and charts describe spending and budget; in income view they describe income, spending against income, and savings, and the page tint changes. The "Show month heatmap & pace" control on the monthly bar opens a calendar coloured by the fixed daily budget (expense view) or by income days (income view), followed by the burn-down or income trend.
 
 ![Expense view](docs/images/dashboard-desktop.png)
 
@@ -60,7 +60,7 @@ Open <http://127.0.0.1:8000>. No package download is required.
 npm test
 ```
 
-This uses Node's built-in test runner; 21 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, income handling, quick add presets, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
+This uses Node's built-in test runner; 22 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, income handling, quick add presets, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
 
 ## Project and evidence
 

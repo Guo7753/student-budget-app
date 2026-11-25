@@ -38,3 +38,24 @@ The feature’s traceability is complete locally for requirement-to-code-to-test
 ## Limitations and next step
 
 The app still stores data only in the current browser and does not include income, receipt extraction, shared accounts, or production security controls. A later iteration could add export, accessibility testing, or receipt assistance only after those constraints are addressed.
+
+## Post-submission refinement (25-26 November 2026)
+
+This section records work completed after the first Assignment 2 submission candidate. It is kept separate so the earlier iteration record still describes what was assessed at that point. The statement above that the application "does not include income" is superseded by this section.
+
+**Trigger.** Two sources of evidence: the lecturer's Assignment 1 feedback asked for visible day-to-day team progress, and the demonstration required an interface that communicates the product's value at projector distance. The team narrowed the demonstration to two ideas - tracking spending against a fixed daily budget, and tracking income separately - and refined the interface to make both visible.
+
+**Changes made.** All changes are in pull request #13 (`feature/ui-polish`) with commits `05d2a7b` through `1add00d`:
+
+1. Interface redesign: card layout, hero header, consistent type scale, tabular figures, a monthly budget bar, and chart surfaces that separate charts from the surrounding panels.
+2. Navigation: the application is split into **Data** and **Insights** pages, with a sticky top bar that carries the page tabs and a single expense/income switch.
+3. Personal budget rules kept explicit: a fixed daily budget derived from the monthly budget divided by calendar days, a daily remaining value that can go negative, and a monthly budget that a recorded expense never changes.
+4. Analysis: a daily spending trend with a dashed fixed-daily-budget reference line, a burn-down comparison of ideal pace against actual remaining budget, a monthly calendar coloured by whether each day stayed within the daily budget, and a category-share donut chart.
+5. Income support: six income categories, an income calendar and income trend, an income-versus-spending comparison with a savings rate and cumulative savings, and an income-source donut. Income adds to the balance only and never changes the budget; this rule is enforced in `budgetSummary` and covered by tests.
+6. Reusable entries: quick add presets are grouped into expense and income lists, sorted by amount, collapsed until opened, and load into the form for confirmation instead of saving immediately.
+7. Budget control: a one-button clear for the selected month that leaves the starting balance untouched.
+8. Accessibility: keyboard-operable controls, `aria-expanded`/`aria-checked` state, visible focus rings, colour plus a text marker for over-budget days, and a `prefers-reduced-motion` fallback.
+
+**Evidence.** `npm test` passes 22 tests after adding `dailyTotals`, `balanceTrend`, `incomeTotals`, `dailyIncomeTotals`, `validatePreset`, `addPreset` and `removePreset`; each new calculation has at least one test. The interface was checked in a headless browser at 1440px and 390px with no horizontal overflow, and every panel was opened and closed during the check. The commit history, this record, and `docs/daily-progress.md` are the traceable evidence for the refinement.
+
+**Limitation.** The refinement was implemented and verified by the author with automated tests and browser checks. It did not receive an independent teammate review, so the evaluation report must state this limitation rather than claim a reviewed change. The process measure for this change is therefore the author's own check, not a review interval.

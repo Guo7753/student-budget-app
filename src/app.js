@@ -195,7 +195,7 @@ const CARD_COPY = {
 };
 
 function applyBodyTheme() {
-  document.body.classList.toggle("theme-income", formMode === "income" && !pageData.hidden);
+  document.body.classList.toggle("theme-income", formMode === "income");
 }
 
 function applyPageMode() {
@@ -1351,7 +1351,7 @@ function closeUsageDetail() {
   usageDetail.hidden = true;
   usageDetail.replaceChildren();
   usageToggle.setAttribute("aria-expanded", "false");
-  usageToggle.textContent = "Show budget breakdown";
+  usageToggle.textContent = "Show month heatmap & pace";
 }
 
 function renderUsageDetail() {
