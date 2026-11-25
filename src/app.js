@@ -16,7 +16,6 @@ const amountInput = document.querySelector("#amount");
 const amountResult = document.querySelector("#amount-result");
 const calculatorPad = document.querySelector("#calculator-pad");
 const calculatorToggle = document.querySelector("#calculator-toggle");
-const chart = document.querySelector("#category-chart");
 const expenseSubmit = document.querySelector("#expense-submit");
 const cancelEdit = document.querySelector("#cancel-edit");
 const usagePanel = document.querySelector(".usage-panel");
@@ -29,7 +28,20 @@ const trendStats = document.querySelector("#trend-stats");
 const trendMonth = document.querySelector("#trend-month");
 const trendDesc = document.querySelector("#trend-desc");
 const metricDetail = document.querySelector("#metric-detail");
-const trendDetail = document.querySelector("#trend-detail");
+const calendarGridWrap = document.querySelector("#calendar-grid-wrap");
+const calendarLegend = document.querySelector("#calendar-legend");
+const calendarDayBox = document.querySelector("#calendar-day-box");
+const pieChartWrap = document.querySelector("#pie-chart");
+const pieLegend = document.querySelector("#pie-legend");
+const pieMonth = document.querySelector("#pie-month");
+const pieNote = document.querySelector("#pie-note");
+const pageData = document.querySelector("#page-data");
+const pageInsights = document.querySelector("#page-insights");
+const monthButton = document.querySelector("#month-button");
+const monthButtonLabel = document.querySelector("#month-button-label");
+const monthPopover = document.querySelector("#month-popover");
+const monthGrid = document.querySelector("#month-grid");
+const monthYearLabel = document.querySelector("#month-popover-year");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
@@ -122,6 +134,84 @@ function populateMonthOptions() {
   monthInput.value = selected && months.has(selected) ? selected : today.slice(0, 7);
 }
 
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+let pickerYear = null;
+
+function updateMonthButton() {
+  monthButtonLabel.textContent = monthLabel(monthInput.value);
+}
+
+function ensureMonthOption(month) {
+  if ([...monthInput.options].some((option) => option.value === month)) return;
+  const option = document.createElement("option");
+  option.value = month;
+  option.textContent = monthLabel(month);
+  monthInput.append(option);
+  const sorted = [...monthInput.options].sort((a, b) => a.value.localeCompare(b.value));
+  monthInput.replaceChildren(...sorted);
+}
+
+function renderMonthGrid() {
+  monthYearLabel.textContent = String(pickerYear);
+  monthGrid.replaceChildren();
+  const current = monthInput.value;
+  const monthsWithData = new Set([
+    ...expenses.map((expense) => expense.date.slice(0, 7)),
+    ...Object.keys(settings.monthlyBudgets || {}),
+  ]);
+  for (let index = 0; index < 12; index += 1) {
+    const value = `${pickerYear}-${String(index + 1).padStart(2, "0")}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = MONTH_NAMES[index].slice(0, 3);
+    button.title = `${MONTH_NAMES[index]} ${pickerYear}`;
+    if (value === current) button.setAttribute("aria-current", "true");
+    if (monthsWithData.has(value)) button.classList.add("has-data");
+    button.addEventListener("click", () => chooseMonth(value));
+    monthGrid.append(button);
+  }
+}
+
+function openMonthPicker() {
+  pickerYear = Number(monthInput.value.slice(0, 4)) || new Date().getFullYear();
+  renderMonthGrid();
+  monthPopover.hidden = false;
+  monthButton.setAttribute("aria-expanded", "true");
+}
+
+function closeMonthPicker() {
+  monthPopover.hidden = true;
+  monthButton.setAttribute("aria-expanded", "false");
+}
+
+function chooseMonth(value) {
+  ensureMonthOption(value);
+  monthInput.value = value;
+  monthInput.dispatchEvent(new Event("change", { bubbles: true }));
+  updateMonthButton();
+  closeMonthPicker();
+}
+
+monthButton.addEventListener("click", () => {
+  if (monthPopover.hidden) openMonthPicker();
+  else closeMonthPicker();
+});
+document.querySelector("#month-prev-year").addEventListener("click", () => {
+  pickerYear -= 1;
+  renderMonthGrid();
+});
+document.querySelector("#month-next-year").addEventListener("click", () => {
+  pickerYear += 1;
+  renderMonthGrid();
+});
+document.addEventListener("click", (event) => {
+  if (monthPopover.hidden || event.target.closest(".month-picker")) return;
+  closeMonthPicker();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !monthPopover.hidden) closeMonthPicker();
+});
+
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 function svgElement(name, attributes = {}) {
   const element = document.createElementNS(SVG_NAMESPACE, name);
@@ -151,32 +241,19 @@ function renderTrend(month) {
   trendMonth.textContent = monthShort(month);
   trendStats.replaceChildren();
   const stats = [
-    { key: "spent", label: "Spent this month", value: currency.format(monthSpent) },
-    { key: null, label: "Average per day", value: currency.format(elapsedDays ? monthSpent / elapsedDays : 0) },
-    { key: "highest", label: "Highest day", value: highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—" },
-    { key: null, label: "Days with spending", value: days ? `${daysWithSpending} of ${elapsedDays}` : "—" },
+    ["Spent this month", currency.format(monthSpent)],
+    ["Average per day", currency.format(elapsedDays ? monthSpent / elapsedDays : 0)],
+    ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
+    ["Days with spending", days ? `${daysWithSpending} of ${elapsedDays}` : "—"],
   ];
-  for (const { key, label, value } of stats) {
-    const item = document.createElement(key ? "button" : "div");
+  for (const [label, value] of stats) {
+    const item = document.createElement("div");
     item.className = "trend-stat";
-    if (key) {
-      item.type = "button";
-      item.dataset.panel = key;
-      item.setAttribute("aria-expanded", "false");
-      item.setAttribute("aria-controls", "trend-detail");
-    }
     const title = document.createElement("span");
     title.textContent = label;
     const figure = document.createElement("strong");
     figure.textContent = value;
     item.append(title, figure);
-    if (key) {
-      const chevron = document.createElement("span");
-      chevron.className = "card-chevron";
-      chevron.setAttribute("aria-hidden", "true");
-      chevron.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>';
-      item.append(chevron);
-    }
     trendStats.append(item);
   }
 
@@ -276,56 +353,6 @@ function showAmountResult() {
   amountResult.classList.toggle("invalid", Boolean(raw) && value === null);
 }
 
-function renderChart(month) {
-  const totals = categoryTotals(expenses, month);
-  const maximum = Math.max(...totals.map(({ amount }) => amount), 0);
-  const monthTotal = totals.reduce((sum, { amount }) => sum + amount, 0);
-  chart.replaceChildren();
-  document.querySelector("#chart-month").textContent = monthShort(month);
-  if (!maximum) {
-    const empty = document.createElement("li");
-    empty.className = "chart-empty";
-    const title = document.createElement("strong");
-    title.textContent = "No spending recorded yet";
-    const hint = document.createElement("span");
-    hint.textContent = "Add an expense for this month to see the category breakdown.";
-    empty.append(title, hint);
-    chart.append(empty);
-    return;
-  }
-  for (const { category, amount } of totals) {
-    const item = document.createElement("li");
-    item.className = "chart-item";
-    const heading = document.createElement("div");
-    heading.className = "chart-item-heading";
-    const name = document.createElement("span");
-    name.className = "chart-category";
-    const icon = document.createElement("span");
-    icon.className = "chart-icon";
-    icon.textContent = CATEGORY_ICONS[category];
-    icon.setAttribute("aria-hidden", "true");
-    name.append(icon, document.createTextNode(category));
-    const value = document.createElement("strong");
-    value.className = "chart-value";
-    value.textContent = currency.format(amount);
-    if (amount > 0) {
-      const share = document.createElement("span");
-      share.className = "chart-share";
-      share.textContent = `${Math.round(amount / monthTotal * 100)}%`;
-      value.append(share);
-    }
-    heading.append(name, value);
-    const track = document.createElement("div");
-    track.className = "chart-track";
-    const bar = document.createElement("span");
-    bar.className = "chart-bar";
-    bar.style.width = `${maximum ? amount / maximum * 100 : 0}%`;
-    track.append(bar);
-    item.append(heading, track);
-    chart.append(item);
-  }
-}
-
 /* ---------- expandable card detail panels ---------- */
 
 let openPanel = null;
@@ -336,17 +363,12 @@ const PANEL_CONFIG = {
   remaining: { kicker: "Monthly remaining", title: () => `Budget pace for ${monthLabel(monthInput.value)}` },
   "daily-budget": { kicker: "Daily budget", title: () => "How the daily budget is calculated" },
   "daily-remaining": { kicker: "Daily remaining", title: () => `Spending on ${dayLabel(dayInput.value)}` },
-  spent: { kicker: "Spent this month", title: () => `${monthLabel(monthInput.value)} day by day` },
-  highest: { kicker: "Highest day", title: () => `What happened on the highest day` },
 };
 
 function closePanels() {
   openPanel = null;
-  calendarDay = null;
   metricDetail.hidden = true;
-  trendDetail.hidden = true;
   metricDetail.replaceChildren();
-  trendDetail.replaceChildren();
   syncCardStates();
 }
 
@@ -364,19 +386,14 @@ function togglePanel(key) {
     return;
   }
   openPanel = key;
-  calendarDay = null;
   renderOpenPanel();
 }
 
 function renderOpenPanel() {
   syncCardStates();
   if (!openPanel) return;
-  const inTrend = openPanel === "spent" || openPanel === "highest";
-  const container = inTrend ? trendDetail : metricDetail;
-  const other = inTrend ? metricDetail : trendDetail;
-  other.hidden = true;
-  other.replaceChildren();
   const config = PANEL_CONFIG[openPanel];
+  if (!config) return;
   const section = document.createElement("section");
   section.className = "detail-card";
 
@@ -402,8 +419,8 @@ function renderOpenPanel() {
   buildPanelBody(openPanel, body);
 
   section.append(header, body);
-  container.replaceChildren(section);
-  container.hidden = false;
+  metricDetail.replaceChildren(section);
+  metricDetail.hidden = false;
 }
 
 function statTile(label, value, tone) {
@@ -642,48 +659,6 @@ function buildPanelBody(key, body) {
     }
     return;
   }
-
-  if (key === "spent") {
-    if (!daysInView) {
-      buildPrompt(body, "Choose a month to see the daily calendar.");
-      return;
-    }
-    const overDays = budget === null ? 0 : totals.filter((item) => item.amount > summary.dailyBudget).length;
-    body.append(statRow([
-      statTile("Total spent", currency.format(summary.monthlySpent)),
-      statTile("Remaining budget", budget === null ? "—" : currency.format(summary.monthlyRemaining), budget !== null && summary.monthlyRemaining < 0 ? "danger" : "safe"),
-      statTile("Days over budget", budget === null ? "—" : String(overDays), overDays ? "danger" : "safe"),
-      statTile("Average per day", currency.format(elapsedDays ? summary.monthlySpent / elapsedDays : 0)),
-    ]));
-    body.append(buildCalendar(month, totals, budget === null ? null : summary.dailyBudget));
-    body.append(buildCalendarLegend(budget !== null));
-    const dayBox = document.createElement("div");
-    dayBox.className = "calendar-day-box";
-    dayBox.id = "calendar-day-box";
-    if (calendarDay) {
-      const heading = document.createElement("h4");
-      heading.textContent = `${dayLabel(calendarDay)} · ${currency.format(totals.find((item) => item.day === calendarDay)?.amount ?? 0)}`;
-      dayBox.append(heading, expenseListFor(calendarDay));
-    }
-    body.append(dayBox);
-    return;
-  }
-
-  if (key === "highest") {
-    const highest = totals.reduce((best, item) => (item.amount > best.amount ? item : best), { day: `${month}-01`, amount: 0 });
-    if (highest.amount <= 0) {
-      buildPrompt(body, "No spending is recorded for this month yet, so there is no highest day.");
-      return;
-    }
-    body.append(statRow([
-      statTile("Date", dayLabel(highest.day)),
-      statTile("Total spent", currency.format(highest.amount)),
-      statTile("Daily budget", budget === null ? "—" : currency.format(summary.dailyBudget)),
-      statTile("Over budget by", budget === null ? "—" : currency.format(Math.max(highest.amount - summary.dailyBudget, 0)), budget !== null && highest.amount > summary.dailyBudget ? "danger" : "safe"),
-    ]));
-    body.append(expenseListFor(highest.day));
-    return;
-  }
 }
 
 function buildPrompt(body, message) {
@@ -777,21 +752,147 @@ for (const card of document.querySelectorAll(".metric-card")) {
   card.addEventListener("click", () => togglePanel(card.dataset.panel));
 }
 
-trendStats.addEventListener("click", (event) => {
-  const card = event.target.closest("[data-panel]");
-  if (card) togglePanel(card.dataset.panel);
-});
-
-trendDetail.addEventListener("click", (event) => {
+calendarGridWrap.addEventListener("click", (event) => {
   const cell = event.target.closest(".cal-day[data-day]");
   if (!cell) return;
   calendarDay = calendarDay === cell.dataset.day ? null : cell.dataset.day;
-  renderOpenPanel();
+  renderCalendarBlock();
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && openPanel) closePanels();
 });
+
+/* ---------- insights: calendar and category share ---------- */
+
+function renderCalendarBlock() {
+  const month = monthInput.value;
+  const totals = dailyTotals(expenses, month);
+  const budget = currentBudget();
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value);
+  const dailyBudget = budget === null ? null : summary.dailyBudget;
+  calendarGridWrap.replaceChildren();
+  calendarLegend.replaceChildren(...buildCalendarLegend(budget !== null).children);
+  if (!totals.length) {
+    const empty = document.createElement("p");
+    empty.className = "detail-prompt";
+    empty.textContent = "Choose a month to see the daily calendar.";
+    calendarGridWrap.append(empty);
+    calendarDayBox.replaceChildren();
+    return;
+  }
+  calendarGridWrap.append(buildCalendar(month, totals, dailyBudget));
+  calendarDayBox.replaceChildren();
+  if (calendarDay) {
+    const heading = document.createElement("h4");
+    const dayTotal = totals.find((item) => item.day === calendarDay)?.amount ?? 0;
+    heading.textContent = `${dayLabel(calendarDay)} · ${currency.format(dayTotal)}${dailyBudget !== null ? ` · daily budget ${currency.format(dailyBudget)}` : ""}`;
+    calendarDayBox.append(heading, expenseListFor(calendarDay));
+  }
+}
+
+const PIE_COLORS = ["#0f9c91", "#2f7ec4", "#7c5cf0", "#c2549e", "#e07a3f", "#b45309", "#e0483f", "#d4a516", "#5aa84a", "#7a8a86"];
+
+function renderPie(month) {
+  const totals = categoryTotals(expenses, month).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount);
+  const total = totals.reduce((sum, item) => sum + item.amount, 0);
+  pieMonth.textContent = monthShort(month);
+  pieChartWrap.replaceChildren();
+  pieLegend.replaceChildren();
+  if (!total) {
+    const empty = document.createElement("p");
+    empty.className = "detail-prompt";
+    empty.textContent = "No spending recorded for this month yet. Add an expense to see the category share.";
+    pieChartWrap.append(empty);
+    pieNote.textContent = "";
+    return;
+  }
+  const size = 240;
+  const radius = 84;
+  const stroke = 30;
+  const circumference = 2 * Math.PI * radius;
+  const svg = svgElement("svg", {
+    viewBox: `0 0 ${size} ${size}`,
+    class: "pie-chart",
+    role: "img",
+    "aria-label": `Category share for ${monthLabel(month)}: ${totals.map((item) => `${item.category} ${Math.round(item.amount / total * 100)} percent`).join(", ")}`,
+  });
+  const background = svgElement("circle", {
+    cx: size / 2, cy: size / 2, r: radius, fill: "none", stroke: "#eef3f1", "stroke-width": stroke,
+  });
+  svg.append(background);
+  let offset = 0;
+  totals.forEach((item, index) => {
+    const share = item.amount / total;
+    const segment = svgElement("circle", {
+      cx: size / 2, cy: size / 2, r: radius,
+      fill: "none",
+      stroke: PIE_COLORS[index % PIE_COLORS.length],
+      "stroke-width": stroke,
+      "stroke-dasharray": `${share * circumference} ${circumference - share * circumference}`,
+      "stroke-dashoffset": -offset * circumference,
+      transform: `rotate(-90 ${size / 2} ${size / 2})`,
+      "stroke-linecap": "butt",
+    });
+    const title = svgElement("title");
+    title.textContent = `${item.category}: ${currency.format(item.amount)} (${Math.round(share * 100)}%)`;
+    segment.append(title);
+    svg.append(segment);
+    offset += share;
+  });
+  const centreValue = svgElement("text", { x: size / 2, y: size / 2 - 4, class: "pie-centre-value", "text-anchor": "middle" });
+  centreValue.textContent = shortMoney(total);
+  const centreLabel = svgElement("text", { x: size / 2, y: size / 2 + 18, class: "pie-centre-label", "text-anchor": "middle" });
+  centreLabel.textContent = "this month";
+  svg.append(centreValue, centreLabel);
+  pieChartWrap.append(svg);
+
+  totals.forEach((item, index) => {
+    const row = document.createElement("li");
+    row.className = "pie-row";
+    const swatch = document.createElement("i");
+    swatch.style.background = PIE_COLORS[index % PIE_COLORS.length];
+    swatch.setAttribute("aria-hidden", "true");
+    const icon = document.createElement("span");
+    icon.className = "pie-icon";
+    icon.textContent = CATEGORY_ICONS[item.category] ?? "";
+    icon.setAttribute("aria-hidden", "true");
+    const name = document.createElement("span");
+    name.className = "pie-name";
+    name.textContent = item.category;
+    const amount = document.createElement("strong");
+    amount.className = "pie-amount";
+    amount.textContent = currency.format(item.amount);
+    const share = document.createElement("span");
+    share.className = "pie-share";
+    share.textContent = `${Math.round(item.amount / total * 100)}%`;
+    row.append(swatch, icon, name, amount, share);
+    pieLegend.append(row);
+  });
+  pieNote.textContent = `Total spent in ${monthLabel(month)}: ${currency.format(total)}. Shares are based on recorded expenses only.`;
+}
+
+/* ---------- page tabs ---------- */
+
+const tabs = [...document.querySelectorAll(".tab")];
+
+function showPage(page) {
+  const isInsights = page === "insights";
+  pageData.hidden = isInsights;
+  pageInsights.hidden = !isInsights;
+  for (const tab of tabs) tab.setAttribute("aria-selected", String(tab.dataset.page === page));
+  if (isInsights) {
+    renderTrend(monthInput.value);
+    renderCalendarBlock();
+    renderPie(monthInput.value);
+  } else if (openPanel) {
+    renderOpenPanel();
+  }
+}
+
+for (const tab of tabs) {
+  tab.addEventListener("click", () => showPage(tab.dataset.page));
+}
 
 function renderUsage(summary, budget) {
   if (budget === null) {
@@ -817,6 +918,7 @@ function renderUsage(summary, budget) {
 }
 
 function render() {
+  updateMonthButton();
   const month = monthInput.value;
   const day = dayInput.value;
   const budget = currentBudget();
@@ -882,8 +984,9 @@ function render() {
     list.append(empty);
   }
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
-  renderChart(month);
   renderTrend(month);
+  renderCalendarBlock();
+  renderPie(month);
   if (openPanel) renderOpenPanel();
 }
 

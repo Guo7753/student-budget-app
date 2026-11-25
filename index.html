@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#0b3b36">
   <meta name="description" content="Student Budget — a lightweight expense tracker for students.">
   <title>Student Budget</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="./styles.css">
   <script type="module" src="./src/app.js"></script>
 </head>
@@ -19,6 +18,18 @@
         </span>
         <span class="brand-text"><strong>Student Budget</strong><small>Personal expense tracker</small></span>
       </div>
+
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button type="button" class="tab" role="tab" id="tab-data" aria-selected="true" aria-controls="page-data" data-page="data">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/></svg>
+          Data
+        </button>
+        <button type="button" class="tab" role="tab" id="tab-insights" aria-selected="false" aria-controls="page-insights" data-page="insights">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V13M10 19.5V6M16 19.5v-4M22 19.5V9"/></svg>
+          Insights
+        </button>
+      </nav>
+
       <span class="privacy-pill">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 10V8a6 6 0 0 1 12 0v2"/><rect x="4" y="10" width="16" height="10" rx="2.5"/></svg>
         Private · this browser
@@ -26,195 +37,182 @@
     </header>
 
     <main class="app-shell">
-      <section class="hero" aria-labelledby="page-title">
-        <div class="hero-copy-wrap">
-          <p class="eyebrow">Your spending space</p>
-          <h1 id="page-title">Know where your money goes.</h1>
-          <p class="hero-copy">Record everyday costs in seconds, and see what is left for the month and for today.</p>
-        </div>
-        <div class="view-controls" aria-label="Choose the month and day to view">
-          <label class="control">
-            <span>Month to view</span>
-            <select id="month" required></select>
-          </label>
-          <label class="control">
-            <span>Day to view</span>
-            <input id="day" type="date" required>
-          </label>
-        </div>
-      </section>
-
-      <section class="metrics" aria-label="Budget overview">
-        <button type="button" class="metric-card balance-card" data-panel="balance" aria-expanded="false" aria-controls="metric-detail">
-          <span class="metric-head">
-            <span class="metric-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.3"/></svg>
-            </span>
-            <span class="metric-label">Balance</span>
-          </span>
-          <strong id="balance" class="metric-value">—</strong>
-          <span class="metric-help">Starting balance minus everything recorded</span>
-          <span class="card-chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
-          </span>
-        </button>
-
-        <button type="button" class="metric-card remaining-card" data-panel="remaining" aria-expanded="false" aria-controls="metric-detail">
-          <span class="metric-head">
-            <span class="metric-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>
-            </span>
-            <span class="metric-label">Monthly remaining</span>
-          </span>
-          <strong id="monthly-remaining" class="metric-value">—</strong>
-          <span class="metric-help">This month's budget less spending</span>
-          <span class="card-chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
-          </span>
-        </button>
-
-        <button type="button" class="metric-card daily-budget-card" data-panel="daily-budget" aria-expanded="false" aria-controls="metric-detail">
-          <span class="metric-head">
-            <span class="metric-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
-            </span>
-            <span class="metric-label">Daily budget</span>
-          </span>
-          <strong id="daily-budget" class="metric-value">—</strong>
-          <span class="metric-help">Fixed for the selected month</span>
-          <span class="card-chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
-          </span>
-        </button>
-
-        <button type="button" class="metric-card daily-remaining-card" data-panel="daily-remaining" aria-expanded="false" aria-controls="metric-detail">
-          <span class="metric-head">
-            <span class="metric-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M3.5 16.5 9 11l3.5 3.5L20.5 6"/><path d="M15.5 6h5v5"/></svg>
-            </span>
-            <span class="metric-label">Daily remaining</span>
-          </span>
-          <strong id="daily-remaining" class="metric-value">—</strong>
-          <span class="metric-help">Daily budget less today's spending</span>
-          <span class="card-chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
-          </span>
-        </button>
-      </section>
-
-      <div id="metric-detail" class="detail-panel" hidden></div>
-
-      <section class="panel usage-panel" aria-labelledby="usage-title">
-        <div class="usage-head">
-          <div>
-            <p class="section-kicker">Monthly budget</p>
-            <h2 id="usage-title">How much of this month's budget is used</h2>
+      <!-- ================= DATA PAGE ================= -->
+      <div class="page-panel" id="page-data" role="tabpanel" aria-labelledby="tab-data">
+        <section class="hero" aria-labelledby="page-title">
+          <div class="hero-copy-wrap">
+            <p class="eyebrow">Your spending space</p>
+            <h1 id="page-title">Know where your money goes.</h1>
+            <p class="hero-copy">Record everyday costs in seconds, and see what is left for the month and for today.</p>
           </div>
-          <p class="usage-figure"><strong id="usage-percent">—</strong><span id="usage-caption">Set a budget to see progress</span></p>
-        </div>
-        <div class="usage-track" role="img" aria-label="Share of the monthly budget used">
-          <span id="usage-bar" class="usage-bar" style="width:0%"></span>
-        </div>
-        <div class="usage-legend">
-          <span>Spent <strong id="monthly-spent">$0.00</strong></span>
-          <span>Budget <strong id="usage-budget">—</strong></span>
-          <span id="daily-spent" class="usage-note"></span>
-        </div>
-      </section>
-
-      <section class="panel trend-panel" aria-labelledby="trend-title">
-        <div class="panel-heading">
-          <div>
-            <p class="section-kicker">Daily spending</p>
-            <h2 id="trend-title">How much you spent each day</h2>
-          </div>
-          <span id="trend-month" class="chip"></span>
-        </div>
-        <div id="trend-stats" class="trend-stats"></div>
-        <div id="trend-detail" class="detail-panel" hidden></div>
-        <div class="trend-chart-wrap">
-          <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
-        </div>
-        <p id="trend-desc" class="trend-note"></p>
-      </section>
-
-      <div class="work-grid">
-        <section class="panel" aria-labelledby="add-title">
-          <div class="panel-heading">
-            <div>
-              <p class="section-kicker">Record</p>
-              <h2 id="add-title">Add an expense</h2>
-            </div>
-            <span class="panel-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            </span>
-          </div>
-
-          <form id="expense-form" class="form-grid">
-            <div class="amount-field">
-              <label for="amount">Amount (NZD)</label>
-              <div class="amount-input-wrap">
-                <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="12+3" required aria-describedby="amount-result">
-                <button id="calculator-toggle" class="calculator-toggle" type="button" aria-label="Open calculator" aria-expanded="false" aria-controls="calculator-pad">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01"/></svg>
+          <div class="view-controls" aria-label="Choose the month and day to view">
+            <div class="control">
+              <span>Month to view</span>
+              <div class="month-picker">
+                <button id="month-button" class="month-button" type="button" aria-haspopup="dialog" aria-expanded="false">
+                  <span id="month-button-label">November 2026</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>
                 </button>
+                <select id="month" class="visually-hidden" tabindex="-1" aria-hidden="true"></select>
+                <div id="month-popover" class="month-popover" role="dialog" aria-label="Choose a month" hidden>
+                  <div class="month-popover-head">
+                    <button id="month-prev-year" type="button" aria-label="Previous year">‹</button>
+                    <strong id="month-popover-year">2026</strong>
+                    <button id="month-next-year" type="button" aria-label="Next year">›</button>
+                  </div>
+                  <div id="month-grid" class="month-grid"></div>
+                </div>
               </div>
-              <span id="amount-result" class="amount-result" aria-live="polite">Type a calculation or open the calculator.</span>
-              <div id="calculator-pad" class="calculator-pad" hidden>
-                <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button><button type="button" data-key="÷" class="key-op">÷</button>
-                <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button><button type="button" data-key="×" class="key-op">×</button>
-                <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button><button type="button" data-key="−" class="key-op">−</button>
-                <button type="button" data-key="C" class="key-op">C</button><button type="button" data-key="0">0</button><button type="button" data-key=".">.</button><button type="button" data-key="+" class="key-op">+</button>
-                <button type="button" data-key="⌫" class="key-wide">⌫</button><button type="button" data-key="=" class="key-wide key-equals">=</button>
-              </div>
             </div>
-            <div class="field-row">
-              <label>Date<input id="date" name="date" type="date" required></label>
-              <label>Category<select id="category" name="category" required></select></label>
-            </div>
-            <label>Note <span class="label-hint">optional, 100 characters</span><input name="note" type="text" maxlength="100" placeholder="What was it for?"></label>
-            <div class="expense-actions">
-              <button id="expense-submit" class="primary-button" type="submit">Save expense<span aria-hidden="true">→</span></button>
-              <button id="cancel-edit" class="cancel-button" type="button" hidden>Cancel edit</button>
-            </div>
-          </form>
-          <p id="expense-message" class="status" role="status" aria-live="polite"></p>
+            <label class="control">
+              <span>Day to view</span>
+              <input id="day" type="date" required>
+            </label>
+          </div>
         </section>
 
-        <section class="panel settings-panel" aria-labelledby="budget-title">
-          <div class="panel-heading">
-            <div>
-              <p class="section-kicker">Plan</p>
-              <h2 id="budget-title">Set your budget</h2>
-            </div>
-            <span class="panel-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M4 7h9M4 12h16M4 17h9"/><circle cx="17.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg>
+        <section class="metrics" aria-label="Budget overview">
+          <button type="button" class="metric-card balance-card" data-panel="balance" aria-expanded="false" aria-controls="metric-detail">
+            <span class="metric-head">
+              <span class="metric-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.3"/></svg>
+              </span>
+              <span class="metric-label">Balance</span>
             </span>
-          </div>
-          <p class="panel-description">The daily budget is your monthly budget divided by the days in that month. Recording an expense changes only what remains.</p>
-          <form id="budget-form" class="budget-form">
-            <label>Starting balance (NZD)<input id="opening-balance" name="openingBalance" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 1200.00" required></label>
-            <p class="field-help">Money you already have before the expenses recorded here.</p>
-            <label>Monthly budget (NZD)<input id="monthly-budget" name="monthlyBudget" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 600.00" required></label>
-            <p class="field-help">Applies to <span id="budget-month-label"></span>. The daily budget is derived from it.</p>
-            <button class="secondary-button" type="submit">Save budget</button>
-          </form>
-          <p id="budget-message" class="status" role="status" aria-live="polite"></p>
-        </section>
-      </div>
+            <strong id="balance" class="metric-value">—</strong>
+            <span class="metric-help">Starting balance minus everything recorded</span>
+            <span class="card-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+            </span>
+          </button>
 
-      <div class="insight-grid">
-        <section class="panel chart-panel" aria-labelledby="chart-title">
-          <div class="panel-heading">
-            <div>
-              <p class="section-kicker">Insights</p>
-              <h2 id="chart-title">Where your money went</h2>
-            </div>
-            <span id="chart-month" class="chip"></span>
-          </div>
-          <p class="panel-description">Spending by category for the selected month. The categories match the expense form.</p>
-          <ul id="category-chart" class="category-chart" aria-label="Monthly spending by category"></ul>
+          <button type="button" class="metric-card remaining-card" data-panel="remaining" aria-expanded="false" aria-controls="metric-detail">
+            <span class="metric-head">
+              <span class="metric-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>
+              </span>
+              <span class="metric-label">Monthly remaining</span>
+            </span>
+            <strong id="monthly-remaining" class="metric-value">—</strong>
+            <span class="metric-help">This month's budget less spending</span>
+            <span class="card-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+            </span>
+          </button>
+
+          <button type="button" class="metric-card daily-budget-card" data-panel="daily-budget" aria-expanded="false" aria-controls="metric-detail">
+            <span class="metric-head">
+              <span class="metric-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              </span>
+              <span class="metric-label">Daily budget</span>
+            </span>
+            <strong id="daily-budget" class="metric-value">—</strong>
+            <span class="metric-help">Fixed for the selected month</span>
+            <span class="card-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+            </span>
+          </button>
+
+          <button type="button" class="metric-card daily-remaining-card" data-panel="daily-remaining" aria-expanded="false" aria-controls="metric-detail">
+            <span class="metric-head">
+              <span class="metric-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3.5 16.5 9 11l3.5 3.5L20.5 6"/><path d="M15.5 6h5v5"/></svg>
+              </span>
+              <span class="metric-label">Daily remaining</span>
+            </span>
+            <strong id="daily-remaining" class="metric-value">—</strong>
+            <span class="metric-help">Daily budget less today's spending</span>
+            <span class="card-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+            </span>
+          </button>
         </section>
+
+        <div id="metric-detail" class="detail-panel" hidden></div>
+
+        <section class="panel usage-panel" aria-labelledby="usage-title">
+          <div class="usage-head">
+            <div>
+              <p class="section-kicker">Monthly budget</p>
+              <h2 id="usage-title">How much of this month's budget is used</h2>
+            </div>
+            <p class="usage-figure"><strong id="usage-percent">—</strong><span id="usage-caption">Set a budget to see progress</span></p>
+          </div>
+          <div class="usage-track" role="img" aria-label="Share of the monthly budget used">
+            <span id="usage-bar" class="usage-bar" style="width:0%"></span>
+          </div>
+          <div class="usage-legend">
+            <span>Spent <strong id="monthly-spent">$0.00</strong></span>
+            <span>Budget <strong id="usage-budget">—</strong></span>
+            <span id="daily-spent" class="usage-note"></span>
+          </div>
+        </section>
+
+        <div class="work-grid">
+          <section class="panel" aria-labelledby="add-title">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Record</p>
+                <h2 id="add-title">Add an expense</h2>
+              </div>
+              <span class="panel-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              </span>
+            </div>
+
+            <form id="expense-form" class="form-grid">
+              <div class="amount-field">
+                <label for="amount">Amount (NZD)</label>
+                <div class="amount-input-wrap">
+                  <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="12+3" required aria-describedby="amount-result">
+                  <button id="calculator-toggle" class="calculator-toggle" type="button" aria-label="Open calculator" aria-expanded="false" aria-controls="calculator-pad">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16.5h.01M12 16.5h.01M16 16.5h.01"/></svg>
+                  </button>
+                </div>
+                <span id="amount-result" class="amount-result" aria-live="polite">Type a calculation or open the calculator.</span>
+                <div id="calculator-pad" class="calculator-pad" hidden>
+                  <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button><button type="button" data-key="÷" class="key-op">÷</button>
+                  <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button><button type="button" data-key="×" class="key-op">×</button>
+                  <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button><button type="button" data-key="−" class="key-op">−</button>
+                  <button type="button" data-key="C" class="key-op">C</button><button type="button" data-key="0">0</button><button type="button" data-key=".">.</button><button type="button" data-key="+" class="key-op">+</button>
+                  <button type="button" data-key="⌫" class="key-wide">⌫</button><button type="button" data-key="=" class="key-wide key-equals">=</button>
+                </div>
+              </div>
+              <div class="field-row">
+                <label>Date<input id="date" name="date" type="date" required></label>
+                <label>Category<select id="category" name="category" required></select></label>
+              </div>
+              <label>Note <span class="label-hint">optional, 100 characters</span><input name="note" type="text" maxlength="100" placeholder="What was it for?"></label>
+              <div class="expense-actions">
+                <button id="expense-submit" class="primary-button" type="submit">Save expense<span aria-hidden="true">→</span></button>
+                <button id="cancel-edit" class="cancel-button" type="button" hidden>Cancel edit</button>
+              </div>
+            </form>
+            <p id="expense-message" class="status" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="panel settings-panel" aria-labelledby="budget-title">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Plan</p>
+                <h2 id="budget-title">Set your budget</h2>
+              </div>
+              <span class="panel-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 7h9M4 12h16M4 17h9"/><circle cx="17.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg>
+              </span>
+            </div>
+            <p class="panel-description">The daily budget is your monthly budget divided by the days in that month. Recording an expense changes only what remains.</p>
+            <form id="budget-form" class="budget-form">
+              <label>Starting balance (NZD)<input id="opening-balance" name="openingBalance" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 1200.00" required></label>
+              <p class="field-help">Money you already have before the expenses recorded here.</p>
+              <label>Monthly budget (NZD)<input id="monthly-budget" name="monthlyBudget" type="number" min="0" max="100000000" step="0.01" placeholder="e.g. 600.00" required></label>
+              <p class="field-help">Applies to <span id="budget-month-label"></span>. The daily budget is derived from it.</p>
+              <button class="secondary-button" type="submit">Save budget</button>
+            </form>
+            <p id="budget-message" class="status" role="status" aria-live="polite"></p>
+          </section>
+        </div>
 
         <section class="panel history-panel" aria-labelledby="history-title">
           <div class="panel-heading">
@@ -225,6 +223,48 @@
             <span id="entry-count" class="chip">0 entries</span>
           </div>
           <ul id="expense-list" class="expense-list"></ul>
+        </section>
+      </div>
+
+      <!-- ================= INSIGHTS PAGE ================= -->
+      <div class="page-panel" id="page-insights" role="tabpanel" aria-labelledby="tab-insights" hidden>
+        <section class="panel trend-panel" aria-labelledby="trend-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Daily spending</p>
+              <h2 id="trend-title">How much you spent each day</h2>
+            </div>
+            <span id="trend-month" class="chip"></span>
+          </div>
+          <div id="trend-stats" class="trend-stats"></div>
+          <div class="trend-chart-wrap">
+            <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
+          </div>
+          <p id="trend-desc" class="trend-note"></p>
+
+          <div class="calendar-block">
+            <div class="calendar-head">
+              <h3>Month at a glance</h3>
+              <div id="calendar-legend" class="calendar-legend"></div>
+            </div>
+            <div id="calendar-grid-wrap"></div>
+            <div id="calendar-day-box" class="calendar-day-box"></div>
+          </div>
+        </section>
+
+        <section class="panel pie-panel" aria-labelledby="pie-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Category share</p>
+              <h2 id="pie-title">Where this month's money went</h2>
+            </div>
+            <span id="pie-month" class="chip"></span>
+          </div>
+          <div class="pie-layout">
+            <div id="pie-chart" class="pie-chart-wrap"></div>
+            <ul id="pie-legend" class="pie-legend"></ul>
+          </div>
+          <p id="pie-note" class="trend-note"></p>
         </section>
       </div>
 

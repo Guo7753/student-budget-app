@@ -1,27 +1,33 @@
-﻿# Student Budget
+# Student Budget
 
 A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
 ![Student Budget dashboard](docs/images/dashboard-desktop.png)
+
+The application has two pages:
+
+- **Data** - choose the month from a calendar picker, review the four summary cards and the monthly budget bar, record or edit an expense, set the budget, and browse the month's expenses.
+- **Insights** - the daily spending trend, a calendar of the month showing each day against the fixed daily budget, and a category-share donut chart.
+
+![Insights page](docs/images/dashboard-insights.png)
 
 ## What the application does
 
 - Records an expense with an amount, date, category, and optional note.
 - Accepts a calculation in the amount field, such as `12+3`, or a calculator keypad; the result is previewed before saving.
 - Shows the selected month's expenses and deletes or edits a stored record (editing keeps the same record identifier).
-- Summarises spending with ten icon-labelled categories and a category spending chart for the selected month.
+- Summarises spending with ten icon-labelled categories and a category-share donut chart.
 - Plots a daily spending trend for the selected month, with the total spent, the average per day, the highest day, and a dashed line for the fixed daily budget.
-- Provides expandable detail panels: select any summary card to open a panel that explains it.
-  - **Balance** - balance at the end of each day, with the lowest point.
+- Shows a calendar of the month where every day is coloured against the fixed daily budget (green within, red over, with a marker as well as colour); selecting a day lists that day's expenses.
+- Provides expandable detail panels on the summary cards:
+  - **Balance** - the balance at the end of each day, with the lowest point.
   - **Monthly remaining** - budget pace and a projection for the end of the month.
-  - **Daily budget** - the calculation itself (`budget / days`) and why spending never changes it.
-  - **Daily remaining** - every expense recorded on the selected day, and whether it exceeds the daily budget.
-  - **Spent this month** - a calendar of the month where each day shows its total, coloured by whether it stayed within the daily budget, with a day-by-day breakdown on click.
-  - **Highest day** - the expenses that made the highest day.
+  - **Daily budget** - the `budget / days` calculation and why spending never changes it.
+  - **Daily remaining** - every expense recorded on the selected day.
 - Keeps a starting balance and a month-specific budget, with a budget usage indicator.
 - Derives a fixed daily budget from the monthly budget and the calendar days in the month. Recording an expense changes the remaining amounts, not the daily budget.
 
-The month selector and all labels are in English. Data is stored in this browser's `localStorage` only.
+The interface is in English. Data is stored in this browser's `localStorage` only.
 
 ## Run
 
