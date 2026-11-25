@@ -1,4 +1,4 @@
-# Student Budget
+﻿# Student Budget
 
 A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
@@ -39,7 +39,7 @@ Open <http://127.0.0.1:8000>. No package download is required.
 npm test
 ```
 
-This uses Node's built-in test runner; 18 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
+This uses Node's built-in test runner; 17 tests cover validation, deletion, editing, calculator parsing, category totals, daily spending totals, balance trend, budget settings, calendar-day calculation, and the fixed-daily-budget rule.
 
 ## Project and evidence
 
