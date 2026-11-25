@@ -27,6 +27,7 @@ Receipt extraction remains optional. Receipt extraction must always ask the user
 - [Assignment 2 Iteration 1 record](docs/assignment-2-iteration-1.md)
 - [Assignment 2 Iteration 2 record](docs/assignment-2-iteration-2.md)
 - [Assignment 2 evidence index](docs/assignment-2-evidence-index.md)
+- [Assignment 2 daily progress log](docs/daily-progress.md)
 - [Review checklist](docs/pr-review-checklist.md)
 - [Team demonstration guide](docs/assignment-2-team-demo.md)
 
