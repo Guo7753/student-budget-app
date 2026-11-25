@@ -18,6 +18,11 @@ const calculatorToggle = document.querySelector("#calculator-toggle");
 const chart = document.querySelector("#category-chart");
 const expenseSubmit = document.querySelector("#expense-submit");
 const cancelEdit = document.querySelector("#cancel-edit");
+const usagePanel = document.querySelector(".usage-panel");
+const usageBar = document.querySelector("#usage-bar");
+const usagePercent = document.querySelector("#usage-percent");
+const usageCaption = document.querySelector("#usage-caption");
+const usageBudget = document.querySelector("#usage-budget");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
@@ -84,8 +89,20 @@ function showAmountResult() {
 function renderChart(month) {
   const totals = categoryTotals(expenses, month);
   const maximum = Math.max(...totals.map(({ amount }) => amount), 0);
+  const monthTotal = totals.reduce((sum, { amount }) => sum + amount, 0);
   chart.replaceChildren();
   document.querySelector("#chart-month").textContent = month;
+  if (!maximum) {
+    const empty = document.createElement("li");
+    empty.className = "chart-empty";
+    const title = document.createElement("strong");
+    title.textContent = "No spending recorded yet";
+    const hint = document.createElement("span");
+    hint.textContent = "Add an expense for this month to see the category breakdown.";
+    empty.append(title, hint);
+    chart.append(empty);
+    return;
+  }
   for (const { category, amount } of totals) {
     const item = document.createElement("li");
     item.className = "chart-item";
@@ -99,7 +116,14 @@ function renderChart(month) {
     icon.setAttribute("aria-hidden", "true");
     name.append(icon, document.createTextNode(category));
     const value = document.createElement("strong");
+    value.className = "chart-value";
     value.textContent = currency.format(amount);
+    if (amount > 0) {
+      const share = document.createElement("span");
+      share.className = "chart-share";
+      share.textContent = `${Math.round(amount / monthTotal * 100)}%`;
+      value.append(share);
+    }
     heading.append(name, value);
     const track = document.createElement("div");
     track.className = "chart-track";
@@ -112,6 +136,29 @@ function renderChart(month) {
   }
 }
 
+function renderUsage(summary, budget) {
+  if (budget === null) {
+    usagePercent.textContent = "—";
+    usageCaption.textContent = "Set a budget to see progress";
+    usageBar.style.width = "0%";
+    usageBudget.textContent = "—";
+    usagePanel.classList.remove("warn", "over");
+    usagePanel.querySelector(".usage-track").setAttribute("aria-label", "Monthly budget not set");
+    return;
+  }
+  const percent = budget > 0 ? summary.monthlySpent / budget * 100 : 0;
+  usagePercent.textContent = `${Math.round(percent)}%`;
+  usageCaption.textContent = "of this month's budget used";
+  usageBar.style.width = `${Math.min(percent, 100)}%`;
+  usageBudget.textContent = currency.format(budget);
+  usagePanel.classList.toggle("warn", percent >= 75 && percent < 100);
+  usagePanel.classList.toggle("over", percent >= 100);
+  usagePanel.querySelector(".usage-track").setAttribute(
+    "aria-label",
+    `${Math.round(percent)} percent of the monthly budget used, ${currency.format(summary.monthlySpent)} of ${currency.format(budget)}`,
+  );
+}
+
 function render() {
   const month = monthInput.value;
   const day = dayInput.value;
@@ -122,9 +169,10 @@ function render() {
   setMetric("daily-budget", summary.dailyBudget, budget !== null);
   setMetric("daily-remaining", summary.dailyRemaining, budget !== null);
   document.querySelector("#monthly-spent").textContent = currency.format(summary.monthlySpent);
+  renderUsage(summary, budget);
   document.querySelector("#daily-spent").textContent = budget === null
     ? "Set a monthly budget to see your daily allowance."
-    : `${currency.format(summary.dailySpent)} spent on ${day}. Daily budget stays fixed when you add expenses.`;
+    : `${currency.format(summary.dailySpent)} spent on ${day} · daily budget stays fixed when you add expenses`;
 
   list.replaceChildren();
   const visible = expenses.filter((expense) => expense.date.startsWith(month))
@@ -141,6 +189,7 @@ function render() {
     const category = document.createElement("strong");
     category.textContent = expense.category;
     const meta = document.createElement("span");
+    meta.className = "expense-meta";
     meta.textContent = `${expense.date}${expense.note ? ` · ${expense.note}` : ""}`;
     details.append(category, meta);
     const amount = document.createElement("strong");
@@ -168,7 +217,11 @@ function render() {
   if (!visible.length) {
     const empty = document.createElement("li");
     empty.className = "empty-state";
-    empty.textContent = "No expenses for this month yet. Add one to start your record.";
+    const title = document.createElement("strong");
+    title.textContent = "Nothing recorded for this month";
+    const hint = document.createElement("span");
+    hint.textContent = "Add your first expense on the left, or pick another month to view.";
+    empty.append(title, hint);
     list.append(empty);
   }
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
