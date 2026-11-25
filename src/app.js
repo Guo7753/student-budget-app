@@ -9,6 +9,7 @@ const expenseMessage = document.querySelector("#expense-message");
 const budgetMessage = document.querySelector("#budget-message");
 const monthInput = document.querySelector("#month");
 const dayInput = document.querySelector("#day");
+const dateInput = document.querySelector("#date");
 const openingInput = document.querySelector("#opening-balance");
 const budgetInput = document.querySelector("#monthly-budget");
 const amountInput = document.querySelector("#amount");
@@ -76,7 +77,7 @@ try {
 
 const today = localDate();
 populateMonthOptions();
-document.querySelector("#date").value = today;
+dateInput.value = today;
 monthInput.value = today.slice(0, 7);
 dayInput.value = today;
 const categoryInput = document.querySelector("#category");
@@ -92,9 +93,20 @@ function currentBudget() {
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
+function monthRange(centerMonth) {
+  const [year, monthNumber] = centerMonth.split("-").map(Number);
+  const months = [];
+  for (let offset = -12; offset <= 6; offset += 1) {
+    const date = new Date(Date.UTC(year, monthNumber - 1 + offset, 1));
+    months.push(`${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`);
+  }
+  return months;
+}
+
 function populateMonthOptions() {
-  const months = new Set(expenses.map((expense) => expense.date.slice(0, 7)));
-  months.add(today.slice(0, 7));
+  const months = new Set(monthRange(today.slice(0, 7)));
+  for (const expense of expenses) months.add(expense.date.slice(0, 7));
+  for (const key of Object.keys(settings.monthlyBudgets || {})) months.add(key);
   if (dayInput.value) months.add(dayInput.value.slice(0, 7));
   if (monthInput.value) months.add(monthInput.value);
   const selected = monthInput.value;
@@ -105,7 +117,7 @@ function populateMonthOptions() {
     option.textContent = monthLabel(month);
     monthInput.append(option);
   }
-  if (selected && months.has(selected)) monthInput.value = selected;
+  monthInput.value = selected && months.has(selected) ? selected : today.slice(0, 7);
 }
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
@@ -481,6 +493,7 @@ budgetForm.addEventListener("submit", (event) => {
 
 monthInput.addEventListener("change", () => {
   if (!dayInput.value.startsWith(monthInput.value)) dayInput.value = `${monthInput.value}-01`;
+  if (editingExpenseId === null) dateInput.value = dayInput.value;
   populateBudgetForm();
   render();
 });
@@ -490,6 +503,15 @@ dayInput.addEventListener("change", () => {
     monthInput.value = dayInput.value.slice(0, 7);
     populateBudgetForm();
   }
+  if (editingExpenseId === null) dateInput.value = dayInput.value;
+  render();
+});
+dateInput.addEventListener("change", () => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateInput.value)) return;
+  populateMonthOptions();
+  monthInput.value = dateInput.value.slice(0, 7);
+  dayInput.value = dateInput.value;
+  populateBudgetForm();
   render();
 });
 
