@@ -45,50 +45,64 @@
       </section>
 
       <section class="metrics" aria-label="Budget overview">
-        <article class="metric-card balance-card">
-          <div class="metric-head">
+        <button type="button" class="metric-card balance-card" data-panel="balance" aria-expanded="false" aria-controls="metric-detail">
+          <span class="metric-head">
             <span class="metric-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.3"/></svg>
             </span>
-            <p class="metric-label">Balance</p>
-          </div>
+            <span class="metric-label">Balance</span>
+          </span>
           <strong id="balance" class="metric-value">—</strong>
-          <p class="metric-help">Starting balance minus everything recorded</p>
-        </article>
+          <span class="metric-help">Starting balance minus everything recorded</span>
+          <span class="card-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+          </span>
+        </button>
 
-        <article class="metric-card remaining-card">
-          <div class="metric-head">
+        <button type="button" class="metric-card remaining-card" data-panel="remaining" aria-expanded="false" aria-controls="metric-detail">
+          <span class="metric-head">
             <span class="metric-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>
             </span>
-            <p class="metric-label">Monthly remaining</p>
-          </div>
+            <span class="metric-label">Monthly remaining</span>
+          </span>
           <strong id="monthly-remaining" class="metric-value">—</strong>
-          <p class="metric-help">This month's budget less spending</p>
-        </article>
+          <span class="metric-help">This month's budget less spending</span>
+          <span class="card-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+          </span>
+        </button>
 
-        <article class="metric-card daily-budget-card">
-          <div class="metric-head">
+        <button type="button" class="metric-card daily-budget-card" data-panel="daily-budget" aria-expanded="false" aria-controls="metric-detail">
+          <span class="metric-head">
             <span class="metric-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
             </span>
-            <p class="metric-label">Daily budget</p>
-          </div>
+            <span class="metric-label">Daily budget</span>
+          </span>
           <strong id="daily-budget" class="metric-value">—</strong>
-          <p class="metric-help">Fixed for the selected month</p>
-        </article>
+          <span class="metric-help">Fixed for the selected month</span>
+          <span class="card-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+          </span>
+        </button>
 
-        <article class="metric-card daily-remaining-card">
-          <div class="metric-head">
+        <button type="button" class="metric-card daily-remaining-card" data-panel="daily-remaining" aria-expanded="false" aria-controls="metric-detail">
+          <span class="metric-head">
             <span class="metric-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M3.5 16.5 9 11l3.5 3.5L20.5 6"/><path d="M15.5 6h5v5"/></svg>
             </span>
-            <p class="metric-label">Daily remaining</p>
-          </div>
+            <span class="metric-label">Daily remaining</span>
+          </span>
           <strong id="daily-remaining" class="metric-value">—</strong>
-          <p class="metric-help">Daily budget less today's spending</p>
-        </article>
+          <span class="metric-help">Daily budget less today's spending</span>
+          <span class="card-chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>
+          </span>
+        </button>
       </section>
+
+      <div id="metric-detail" class="detail-panel" hidden></div>
 
       <section class="panel usage-panel" aria-labelledby="usage-title">
         <div class="usage-head">
@@ -117,6 +131,7 @@
           <span id="trend-month" class="chip"></span>
         </div>
         <div id="trend-stats" class="trend-stats"></div>
+        <div id="trend-detail" class="detail-panel" hidden></div>
         <div class="trend-chart-wrap">
           <svg id="trend-chart" class="trend-chart" role="img" aria-label="Daily spending chart"></svg>
         </div>

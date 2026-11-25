@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
-  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals,
+  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals, balanceTrend,
   CATEGORIES, CATEGORY_ICONS,
 } from "../src/budget.js";
 
@@ -130,4 +130,19 @@ test("daily totals ignore other months and respect month length", () => {
   assert.equal(february.length, 28);
   assert.equal(february.reduce((sum, item) => sum + item.amount, 0), 0);
   assert.deepEqual(dailyTotals(expenses, "not-a-month"), []);
+});
+
+test("balance trend subtracts spending day by day from the opening balance", () => {
+  const expenses = [
+    { id: "a", amount: 100, date: "2026-10-15", category: "Food" },
+    { id: "b", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "c", amount: 30, date: "2026-11-10", category: "Study" },
+  ];
+  const series = balanceTrend(expenses, 500, "2026-11");
+  assert.equal(series.length, 30);
+  assert.equal(series[0].balance, 400);
+  assert.equal(series[1].balance, 380);
+  assert.equal(series[9].balance, 350);
+  assert.equal(series[29].balance, 350);
+  assert.deepEqual(balanceTrend(expenses, 500, "not-a-month"), []);
 });

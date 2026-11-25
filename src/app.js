@@ -1,4 +1,4 @@
-import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
+import { addExpense, updateExpense, removeExpense, budgetSummary, validateSettings, calculateAmount, categoryTotals, dailyTotals, balanceTrend, CATEGORIES, CATEGORY_ICONS } from "./budget.js";
 
 const expenseKey = "student-budget-expenses-v1";
 const settingsKey = "student-budget-settings-v1";
@@ -28,6 +28,8 @@ const trendChart = document.querySelector("#trend-chart");
 const trendStats = document.querySelector("#trend-stats");
 const trendMonth = document.querySelector("#trend-month");
 const trendDesc = document.querySelector("#trend-desc");
+const metricDetail = document.querySelector("#metric-detail");
+const trendDetail = document.querySelector("#trend-detail");
 const currency = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
 
 function localDate() {
@@ -149,19 +151,32 @@ function renderTrend(month) {
   trendMonth.textContent = monthShort(month);
   trendStats.replaceChildren();
   const stats = [
-    ["Spent this month", currency.format(monthSpent)],
-    ["Average per day", currency.format(elapsedDays ? monthSpent / elapsedDays : 0)],
-    ["Highest day", highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—"],
-    ["Days with spending", days ? `${daysWithSpending} of ${elapsedDays}` : "—"],
+    { key: "spent", label: "Spent this month", value: currency.format(monthSpent) },
+    { key: null, label: "Average per day", value: currency.format(elapsedDays ? monthSpent / elapsedDays : 0) },
+    { key: "highest", label: "Highest day", value: highest.amount > 0 ? `${currency.format(highest.amount)} · ${dayLabel(highest.day)}` : "—" },
+    { key: null, label: "Days with spending", value: days ? `${daysWithSpending} of ${elapsedDays}` : "—" },
   ];
-  for (const [label, value] of stats) {
-    const item = document.createElement("div");
+  for (const { key, label, value } of stats) {
+    const item = document.createElement(key ? "button" : "div");
     item.className = "trend-stat";
+    if (key) {
+      item.type = "button";
+      item.dataset.panel = key;
+      item.setAttribute("aria-expanded", "false");
+      item.setAttribute("aria-controls", "trend-detail");
+    }
     const title = document.createElement("span");
     title.textContent = label;
     const figure = document.createElement("strong");
     figure.textContent = value;
     item.append(title, figure);
+    if (key) {
+      const chevron = document.createElement("span");
+      chevron.className = "card-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></svg>';
+      item.append(chevron);
+    }
     trendStats.append(item);
   }
 
@@ -311,6 +326,473 @@ function renderChart(month) {
   }
 }
 
+/* ---------- expandable card detail panels ---------- */
+
+let openPanel = null;
+let calendarDay = null;
+
+const PANEL_CONFIG = {
+  balance: { kicker: "Balance", title: () => `How the balance changed in ${monthLabel(monthInput.value)}` },
+  remaining: { kicker: "Monthly remaining", title: () => `Budget pace for ${monthLabel(monthInput.value)}` },
+  "daily-budget": { kicker: "Daily budget", title: () => "How the daily budget is calculated" },
+  "daily-remaining": { kicker: "Daily remaining", title: () => `Spending on ${dayLabel(dayInput.value)}` },
+  spent: { kicker: "Spent this month", title: () => `${monthLabel(monthInput.value)} day by day` },
+  highest: { kicker: "Highest day", title: () => `What happened on the highest day` },
+};
+
+function closePanels() {
+  openPanel = null;
+  calendarDay = null;
+  metricDetail.hidden = true;
+  trendDetail.hidden = true;
+  metricDetail.replaceChildren();
+  trendDetail.replaceChildren();
+  syncCardStates();
+}
+
+function syncCardStates() {
+  for (const card of document.querySelectorAll("[data-panel]")) {
+    const active = card.dataset.panel === openPanel;
+    card.setAttribute("aria-expanded", String(active));
+    card.classList.toggle("is-open", active);
+  }
+}
+
+function togglePanel(key) {
+  if (openPanel === key) {
+    closePanels();
+    return;
+  }
+  openPanel = key;
+  calendarDay = null;
+  renderOpenPanel();
+}
+
+function renderOpenPanel() {
+  syncCardStates();
+  if (!openPanel) return;
+  const inTrend = openPanel === "spent" || openPanel === "highest";
+  const container = inTrend ? trendDetail : metricDetail;
+  const other = inTrend ? metricDetail : trendDetail;
+  other.hidden = true;
+  other.replaceChildren();
+  const config = PANEL_CONFIG[openPanel];
+  const section = document.createElement("section");
+  section.className = "detail-card";
+
+  const header = document.createElement("header");
+  header.className = "detail-head";
+  const heading = document.createElement("div");
+  const kicker = document.createElement("p");
+  kicker.className = "section-kicker";
+  kicker.textContent = config.kicker;
+  const title = document.createElement("h3");
+  title.textContent = config.title();
+  heading.append(kicker, title);
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "detail-close";
+  close.setAttribute("aria-label", "Close details");
+  close.textContent = "×";
+  close.addEventListener("click", () => closePanels());
+  header.append(heading, close);
+
+  const body = document.createElement("div");
+  body.className = "detail-body";
+  buildPanelBody(openPanel, body);
+
+  section.append(header, body);
+  container.replaceChildren(section);
+  container.hidden = false;
+}
+
+function statTile(label, value, tone) {
+  const tile = document.createElement("div");
+  tile.className = "detail-stat";
+  if (tone) tile.classList.add(`is-${tone}`);
+  const caption = document.createElement("span");
+  caption.textContent = label;
+  const figure = document.createElement("strong");
+  figure.textContent = value;
+  tile.append(caption, figure);
+  return tile;
+}
+
+function statRow(tiles) {
+  const row = document.createElement("div");
+  row.className = "detail-stats";
+  row.append(...tiles);
+  return row;
+}
+
+function expenseItem(expense) {
+  const item = document.createElement("li");
+  item.className = "detail-expense";
+  const icon = document.createElement("span");
+  icon.className = "detail-expense-icon";
+  icon.textContent = CATEGORY_ICONS[expense.category] ?? CATEGORY_ICONS.Other;
+  icon.setAttribute("aria-hidden", "true");
+  const details = document.createElement("span");
+  details.className = "detail-expense-details";
+  const name = document.createElement("strong");
+  name.textContent = expense.category;
+  const note = document.createElement("span");
+  note.textContent = expense.note || "No note";
+  details.append(name, note);
+  const amount = document.createElement("strong");
+  amount.className = "detail-expense-amount";
+  amount.textContent = currency.format(Number(expense.amount));
+  item.append(icon, details, amount);
+  return item;
+}
+
+function expenseListFor(day) {
+  const list = expenses
+    .filter((expense) => expense.date === day)
+    .sort((a, b) => Number(b.amount) - Number(a.amount));
+  if (!list.length) {
+    const empty = document.createElement("p");
+    empty.className = "detail-empty-inline";
+    empty.textContent = "No expenses recorded on this day.";
+    return empty;
+  }
+  const ul = document.createElement("ul");
+  ul.className = "detail-expense-list";
+  ul.append(...list.map(expenseItem));
+  return ul;
+}
+
+function shortMoney(value) {
+  const rounded = Math.round(Number(value) * 100) / 100;
+  return `$${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)}`;
+}
+
+function lineChart(points, options = {}) {
+  const width = 720;
+  const height = options.height ?? 200;
+  const padding = { top: 14, right: 16, bottom: 24, left: 56 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const svg = svgElement("svg", {
+    viewBox: `0 0 ${width} ${height}`,
+    class: "detail-chart",
+    role: "img",
+    "aria-label": options.label || "chart",
+  });
+  const values = points.map((point) => point.value);
+  const rawMin = Math.min(...values, 0);
+  const rawMax = Math.max(...values, 0);
+  const step = niceCeiling((rawMax - rawMin || 1) / 4);
+  const minBound = Math.floor(rawMin / step) * step;
+  const maxBound = Math.max(Math.ceil(rawMax / step) * step, minBound + step);
+  const xAt = (index) => padding.left + (points.length <= 1 ? plotWidth / 2 : (index / (points.length - 1)) * plotWidth);
+  const yAt = (value) => padding.top + plotHeight - ((value - minBound) / (maxBound - minBound)) * plotHeight;
+
+  for (let value = minBound; value <= maxBound + 0.001; value += step) {
+    const lineY = yAt(value);
+    svg.append(svgElement("line", {
+      x1: padding.left, x2: width - padding.right, y1: lineY, y2: lineY,
+      class: Math.abs(value) < 0.001 ? "trend-axis-line" : "trend-grid",
+    }));
+    const label = svgElement("text", { x: padding.left - 8, y: lineY + 3.5, class: "trend-y-label", "text-anchor": "end" });
+    label.textContent = shortMoney(value);
+    svg.append(label);
+  }
+
+  const coordinates = points.map((point, index) => [xAt(index), yAt(point.value)]);
+  if (options.area) {
+    svg.append(svgElement("path", {
+      d: `M ${coordinates[0][0]},${yAt(Math.max(minBound, 0))} L ${coordinates.map(([x, y]) => `${x},${y}`).join(" L ")} L ${coordinates[coordinates.length - 1][0]},${yAt(Math.max(minBound, 0))} Z`,
+      class: options.tone === "warm" ? "trend-area is-warm" : "trend-area",
+    }));
+  }
+  svg.append(svgElement("polyline", {
+    points: coordinates.map(([x, y]) => `${x},${y}`).join(" "),
+    class: options.tone === "warm" ? "trend-line is-warm" : "trend-line",
+  }));
+  points.forEach((point, index) => {
+    const dot = svgElement("circle", {
+      cx: coordinates[index][0], cy: coordinates[index][1], r: 3, class: "trend-dot",
+    });
+    const title = svgElement("title");
+    title.textContent = `${point.label} · ${currency.format(point.value)}`;
+    dot.append(title);
+    svg.append(dot);
+  });
+  const stepLabel = Math.max(1, Math.round(points.length / 6));
+  points.forEach((point, index) => {
+    if (index % stepLabel !== 0 && index !== points.length - 1) return;
+    const label = svgElement("text", {
+      x: coordinates[index][0], y: height - 6, class: "trend-x-label", "text-anchor": "middle",
+    });
+    label.textContent = String(Number(point.label.slice(8, 10)) || point.label);
+    svg.append(label);
+  });
+  return svg;
+}
+
+function buildPanelBody(key, body) {
+  const month = monthInput.value;
+  const budget = currentBudget();
+  const summary = budgetSummary(expenses, settings.openingBalance ?? 0, budget ?? 0, month, dayInput.value);
+  const totals = dailyTotals(expenses, month);
+  const daysInView = totals.length;
+  const isCurrentMonth = month === today.slice(0, 7);
+  const elapsedDays = isCurrentMonth ? Math.min(Number(today.slice(8, 10)), daysInView) : daysInView;
+
+  if (key === "balance") {
+    if (settings.openingBalance === null) {
+      buildPrompt(body, "Set a starting balance to see how it changes day by day.");
+      return;
+    }
+    const series = balanceTrend(expenses, settings.openingBalance, month);
+    const lowest = series.reduce((low, point) => (point.balance < low.balance ? point : low), series[0] ?? { balance: 0, day: month });
+    body.append(statRow([
+      statTile("Starting balance", currency.format(settings.openingBalance)),
+      statTile("Balance now", currency.format(summary.balance), summary.balance < 0 ? "danger" : null),
+      statTile("Lowest point", `${currency.format(lowest.balance)} · ${dayLabel(lowest.day)}`, lowest.balance < 0 ? "danger" : null),
+      statTile("Spent this month", currency.format(summary.monthlySpent)),
+    ]));
+    body.append(lineChart(series.map((point) => ({ label: point.day, value: point.balance })), {
+      label: `Balance for each day of ${monthLabel(month)}`,
+      area: true,
+      tone: "warm",
+    }));
+    body.append(noteLine("Each point is the balance at the end of that day: starting balance minus every recorded expense up to that date."));
+    return;
+  }
+
+  if (key === "remaining") {
+    if (budget === null) {
+      buildPrompt(body, "Set a monthly budget for this month to see the budget pace.");
+      return;
+    }
+    const average = elapsedDays ? summary.monthlySpent / elapsedDays : 0;
+    const projected = average * daysInView;
+    const difference = budget - projected;
+    const daysLeft = Math.max(daysInView - elapsedDays, 0);
+    body.append(statRow([
+      statTile("Budget", currency.format(budget)),
+      statTile("Spent so far", currency.format(summary.monthlySpent)),
+      statTile("Average per day", currency.format(average)),
+      statTile("Projected total", currency.format(projected)),
+    ]));
+    const pace = document.createElement("div");
+    pace.className = "pace";
+    const track = document.createElement("div");
+    track.className = "pace-track";
+    const bar = document.createElement("span");
+    bar.className = "pace-bar";
+    bar.style.width = `${Math.min(budget > 0 ? summary.monthlySpent / budget * 100 : 0, 100)}%`;
+    track.append(bar);
+    const caption = document.createElement("p");
+    caption.className = "pace-caption";
+    caption.textContent = `${daysLeft} day${daysLeft === 1 ? "" : "s"} left in ${monthLabel(month)}.`;
+    pace.append(track, caption);
+    body.append(pace);
+    body.append(statRow([
+      statTile("Projection", difference >= 0 ? `Under by ${currency.format(difference)}` : `Over by ${currency.format(Math.abs(difference))}`, difference >= 0 ? "safe" : "danger"),
+      statTile("Remaining budget", currency.format(summary.monthlyRemaining), summary.monthlyRemaining < 0 ? "danger" : null),
+    ]));
+    body.append(noteLine(difference >= 0
+      ? "At the current daily average, the month would end below the budget. This is a projection, not a guarantee."
+      : "At the current daily average, the month would end above the budget. Reduce daily spending or adjust the budget."));
+    return;
+  }
+
+  if (key === "daily-budget") {
+    if (budget === null) {
+      buildPrompt(body, "Set a monthly budget for this month to see how the daily budget is calculated.");
+      return;
+    }
+    const formula = document.createElement("div");
+    formula.className = "formula";
+    const line = document.createElement("p");
+    line.className = "formula-line";
+    line.textContent = `${currency.format(budget)} ÷ ${daysInView} days = ${currency.format(summary.dailyBudget)} per day`;
+    const rule = document.createElement("p");
+    rule.className = "formula-rule";
+    rule.textContent = "Adding, editing, or deleting an expense changes what remains, never this figure.";
+    formula.append(line, rule);
+    body.append(formula);
+    body.append(statRow([
+      statTile("Monthly budget", currency.format(budget)),
+      statTile("Days in month", String(daysInView)),
+      statTile("Daily budget", currency.format(summary.dailyBudget)),
+      statTile("Spent on selected day", currency.format(summary.dailySpent)),
+    ]));
+    body.append(statRow([
+      statTile("Remaining today", currency.format(summary.dailyRemaining), summary.dailyRemaining < 0 ? "danger" : "safe"),
+      statTile("Remaining this month", currency.format(summary.monthlyRemaining), summary.monthlyRemaining < 0 ? "danger" : null),
+    ]));
+    return;
+  }
+
+  if (key === "daily-remaining") {
+    const day = dayInput.value;
+    const dayTotal = summary.dailySpent;
+    body.append(statRow([
+      statTile(`Spent on ${dayLabel(day)}`, currency.format(dayTotal)),
+      statTile("Daily budget", budget === null ? "—" : currency.format(summary.dailyBudget)),
+      statTile("Remaining that day", budget === null ? "—" : currency.format(summary.dailyRemaining), budget !== null && summary.dailyRemaining < 0 ? "danger" : "safe"),
+    ]));
+    body.append(expenseListFor(day));
+    if (budget !== null && summary.dailyRemaining < 0) {
+      body.append(noteLine(`This day is over the daily budget by ${currency.format(Math.abs(summary.dailyRemaining))}. The daily budget itself is unchanged.`));
+    }
+    return;
+  }
+
+  if (key === "spent") {
+    if (!daysInView) {
+      buildPrompt(body, "Choose a month to see the daily calendar.");
+      return;
+    }
+    const overDays = budget === null ? 0 : totals.filter((item) => item.amount > summary.dailyBudget).length;
+    body.append(statRow([
+      statTile("Total spent", currency.format(summary.monthlySpent)),
+      statTile("Remaining budget", budget === null ? "—" : currency.format(summary.monthlyRemaining), budget !== null && summary.monthlyRemaining < 0 ? "danger" : "safe"),
+      statTile("Days over budget", budget === null ? "—" : String(overDays), overDays ? "danger" : "safe"),
+      statTile("Average per day", currency.format(elapsedDays ? summary.monthlySpent / elapsedDays : 0)),
+    ]));
+    body.append(buildCalendar(month, totals, budget === null ? null : summary.dailyBudget));
+    body.append(buildCalendarLegend(budget !== null));
+    const dayBox = document.createElement("div");
+    dayBox.className = "calendar-day-box";
+    dayBox.id = "calendar-day-box";
+    if (calendarDay) {
+      const heading = document.createElement("h4");
+      heading.textContent = `${dayLabel(calendarDay)} · ${currency.format(totals.find((item) => item.day === calendarDay)?.amount ?? 0)}`;
+      dayBox.append(heading, expenseListFor(calendarDay));
+    }
+    body.append(dayBox);
+    return;
+  }
+
+  if (key === "highest") {
+    const highest = totals.reduce((best, item) => (item.amount > best.amount ? item : best), { day: `${month}-01`, amount: 0 });
+    if (highest.amount <= 0) {
+      buildPrompt(body, "No spending is recorded for this month yet, so there is no highest day.");
+      return;
+    }
+    body.append(statRow([
+      statTile("Date", dayLabel(highest.day)),
+      statTile("Total spent", currency.format(highest.amount)),
+      statTile("Daily budget", budget === null ? "—" : currency.format(summary.dailyBudget)),
+      statTile("Over budget by", budget === null ? "—" : currency.format(Math.max(highest.amount - summary.dailyBudget, 0)), budget !== null && highest.amount > summary.dailyBudget ? "danger" : "safe"),
+    ]));
+    body.append(expenseListFor(highest.day));
+    return;
+  }
+}
+
+function buildPrompt(body, message) {
+  const prompt = document.createElement("p");
+  prompt.className = "detail-prompt";
+  prompt.textContent = message;
+  body.append(prompt);
+}
+
+function noteLine(message) {
+  const note = document.createElement("p");
+  note.className = "detail-note";
+  note.textContent = message;
+  return note;
+}
+
+function buildCalendar(month, totals, dailyBudget) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "calendar";
+  const weekdays = document.createElement("div");
+  weekdays.className = "calendar-weekdays";
+  for (const name of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
+    const cell = document.createElement("span");
+    cell.textContent = name;
+    weekdays.append(cell);
+  }
+  const grid = document.createElement("div");
+  grid.className = "calendar-grid";
+  const firstWeekday = new Date(`${month}-01T00:00:00Z`).getUTCDay();
+  const leading = (firstWeekday + 6) % 7;
+  for (let index = 0; index < leading; index += 1) {
+    const filler = document.createElement("span");
+    filler.className = "cal-day is-blank";
+    filler.setAttribute("aria-hidden", "true");
+    grid.append(filler);
+  }
+  for (const item of totals) {
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cal-day";
+    cell.dataset.day = item.day;
+    const dayNumber = document.createElement("span");
+    dayNumber.className = "cal-day-number";
+    dayNumber.textContent = String(Number(item.day.slice(8, 10)));
+    cell.append(dayNumber);
+    if (item.amount > 0) {
+      const amount = document.createElement("span");
+      amount.className = "cal-day-amount";
+      amount.textContent = shortMoney(item.amount);
+      cell.append(amount);
+    }
+    if (item.amount <= 0) cell.classList.add("is-none");
+    else if (dailyBudget !== null && item.amount > dailyBudget) {
+      cell.classList.add("is-over");
+      if (dailyBudget > 0 && item.amount > dailyBudget * 2) cell.classList.add("is-over-heavy");
+      const flag = document.createElement("span");
+      flag.className = "cal-flag";
+      flag.setAttribute("aria-hidden", "true");
+      flag.textContent = "!";
+      cell.append(flag);
+    } else if (dailyBudget !== null) cell.classList.add("is-safe");
+    if (item.day === today) cell.classList.add("is-today");
+    if (item.day === calendarDay) cell.classList.add("is-selected");
+    const label = `${dayLabel(item.day)}: ${currency.format(item.amount)}${dailyBudget !== null && item.amount > dailyBudget ? ", over the daily budget" : ""}`;
+    cell.setAttribute("aria-label", label);
+    grid.append(cell);
+  }
+  wrapper.append(weekdays, grid);
+  return wrapper;
+}
+
+function buildCalendarLegend(hasBudget) {
+  const legend = document.createElement("div");
+  legend.className = "calendar-legend";
+  const entries = hasBudget
+    ? [["is-safe", "Within daily budget"], ["is-over", "Over daily budget"], ["is-none", "No spending"]]
+    : [["is-none", "No spending"]];
+  for (const [className, label] of entries) {
+    const item = document.createElement("span");
+    item.className = `legend-item ${className}`;
+    const swatch = document.createElement("i");
+    const text = document.createElement("span");
+    text.textContent = label;
+    item.append(swatch, text);
+    legend.append(item);
+  }
+  return legend;
+}
+
+for (const card of document.querySelectorAll(".metric-card")) {
+  card.addEventListener("click", () => togglePanel(card.dataset.panel));
+}
+
+trendStats.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-panel]");
+  if (card) togglePanel(card.dataset.panel);
+});
+
+trendDetail.addEventListener("click", (event) => {
+  const cell = event.target.closest(".cal-day[data-day]");
+  if (!cell) return;
+  calendarDay = calendarDay === cell.dataset.day ? null : cell.dataset.day;
+  renderOpenPanel();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && openPanel) closePanels();
+});
+
 function renderUsage(summary, budget) {
   if (budget === null) {
     usagePercent.textContent = "—";
@@ -402,6 +884,7 @@ function render() {
   document.querySelector("#entry-count").textContent = `${visible.length} ${visible.length === 1 ? "entry" : "entries"}`;
   renderChart(month);
   renderTrend(month);
+  if (openPanel) renderOpenPanel();
 }
 
 function resetExpenseForm() {

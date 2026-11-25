@@ -17,6 +17,7 @@ The current interface is functional but visually plain. The demonstration is ass
 7. **Responsiveness** - single-column layout on narrow screens, two-column layout on laptop widths.
 8. **Accessibility and interaction** - visible focus states, keyboard support for the calculator, accessible labels, and reduced reliance on colour alone.
 9. **Empty and loading states** - guided first-use messages instead of blank panels.
+10. **Expandable detail panels** - each summary card opens a panel that explains its figure: a balance timeline, a month-end budget projection, the daily-budget calculation and its fixed behaviour, the selected day's expenses, a calendar of daily spending coloured by whether each day stayed within the daily budget, and the expenses behind the highest day. Over-budget days use a red treatment plus a visible marker so the meaning does not depend on colour alone.
 
 ## Constraints
 

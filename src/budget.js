@@ -80,6 +80,21 @@ export function dailyTotals(expenses, month) {
   return totals.map(({ day, amount }) => ({ day, amount: amount / 100 }));
 }
 
+export function balanceTrend(expenses, openingBalance, month) {
+  const totals = dailyTotals(expenses, month);
+  if (!totals.length) return [];
+  const openingCents = cents(openingBalance);
+  const firstDay = `${month}-01`;
+  const priorCents = expenses
+    .filter((expense) => expense.date < firstDay)
+    .reduce((sum, expense) => sum + cents(expense.amount), 0);
+  let runningCents = openingCents - priorCents;
+  return totals.map(({ day, amount }) => {
+    runningCents -= cents(amount);
+    return { day, balance: runningCents / 100 };
+  });
+}
+
 export function validateSettings(input) {
   for (const [field, label] of [["openingBalance", "Starting balance"], ["monthlyBudget", "Monthly budget"]]) {
     const raw = String(input[field] ?? "").trim();
