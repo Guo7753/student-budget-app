@@ -1,6 +1,6 @@
 # Student Budget
 
-A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
+A small browser-based expense tracker built for the CISE group assessment. The project topic was chosen by the team from the assignment's suggested topics. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
 ![Student Budget dashboard](docs/images/dashboard-desktop.png)
 
