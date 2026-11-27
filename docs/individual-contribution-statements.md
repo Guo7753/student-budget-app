@@ -1,21 +1,29 @@
-# Individual contribution statements
+# Individual contribution statements — Assignment 2
 
-Each student should review this statement before submitting it individually and remove any claim that does not accurately describe their work.
+These statements are also included in Appendix A of the group evaluation report. They describe only activity that the repository can verify.
 
-## Guo HouYang 25307753
+## Guo HouYang (25307753)
 
-I coordinated the backlog and implemented the Assignment 2 increment. My work included the balance and budget dashboard, ten category icons, category chart, arithmetic amount calculator, and the B4 expense-editing workflow. I wrote or updated the associated Node tests and completed the local browser checks for editing, cancellation, and the literal-note security scenario. Evidence: [PR 9](https://github.com/Guo7753/student-budget-app/pull/9), `src/app.js`, `src/budget.js`, `test/budget.test.js`, and the Assignment 2 iteration records.
+I was team lead and the main implementer. I maintained the backlog and the iteration records, implemented the budget dashboard, the arithmetic entry, the category chart, the edit workflow, the income boundary and the interface refinement, and I ran the test suite and the browser checks. I also maintained the repository, the review checklist and the report drafts.
 
-## Chen GuangYuan 25307711
+Evidence: pull requests 9, 11 and 13; commits `0f3fc63` to `268bcac`; `docs/assignment-2-iteration-1.md`, `docs/assignment-2-iteration-2.md` and `docs/daily-progress.md`.
 
-I reviewed [PR 9](https://github.com/Guo7753/student-budget-app/pull/9#pullrequestreview-5860782141), which covered the budget dashboard, category chart, calculator, and their test coverage. I commented on the changed workflow and approved the review after checking the supplied evidence. This review informed the recorded Iteration 1 outcome. Evidence: the linked GitHub review and the contribution record.
+## Li Hao (25307493)
 
-## Li Hao 25307493
+I reviewed two pull requests. On pull request 2 I raised the concern that a negative amount had to be rejected rather than stored, and on pull request 11 I reviewed the budget, editing and evidence changes against the acceptance criteria and the test command, and approved the change.
 
-I reviewed and approved the baseline [PR 2](https://github.com/Guo7753/student-budget-app/pull/2), including its CI result, and raised negative-amount validation as a concern. The existing guard and test covered that condition. This review provides the tracked baseline that Assignment 2 extends. Evidence: the linked GitHub review, merge commit, and contribution record.
+Evidence: the review records on pull request 2 (approved 2026-11-11T14:05:10Z) and pull request 11 (approved 2026-11-25T14:03:19Z).
 
-## Shang JiaLe 25307221
+## Chen GuangYuan (25307711)
 
-I measured the wait from pull-request opening to first review for PR 2 and PR 9, recorded approximately 125.4 and 26.1 hours respectively, and proposed a 24-hour review window. This measurement informed the Assignment 2 process-improvement checklist. Evidence: [process-measurement comment](https://github.com/Guo7753/student-budget-app/pull/9#issuecomment-6800260423), the Iteration 1 record, and the review checklist.
+I reviewed pull request 9, checking the dashboard, the category chart and the calculator against their stated scope and the test coverage, and I approved it with comments.
 
-These statements record verified repository activity. A student should add a link to any further personal work, such as the final B4 review, only after it has actually occurred.
+Evidence: the review record on pull request 9 (approved 2026-11-11T15:00:59Z).
+
+## Shang JiaLe (25307221)
+
+I measured the first-review intervals for pull requests 2 and 9 from the GitHub timestamps (about 125.4 hours and 26.1 hours) and recorded the comparison and a proposed 24-hour review window in a comment on pull request 9.
+
+Evidence: the comment on pull request 9.
+
+The team records that implementation was concentrated in Guo HouYang. The Assignment 1 plan assigned implementation across members; that plan was not fully realised, and these statements report what the repository can verify rather than the intended division.
