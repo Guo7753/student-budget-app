@@ -1,4 +1,4 @@
-# Assignment 2 evidence index
+﻿# Assignment 2 evidence index
 
 This index separates evidence already observed from evidence that must be added after the B4 pull request is published and reviewed.
 
@@ -13,6 +13,7 @@ This index separates evidence already observed from evidence that must be added 
 | Group demonstration | [10-minute flow and Q&A plan](assignment-2-team-demo.md) | Prepared; actual session and attendance not yet recorded |
 | Individual contribution explanations | [Member statements](individual-contribution-statements.md) | Review for accuracy and use for each member's spoken segment |
 | Runnable application | [README](../README.md), `npm start`, `npm test` | Complete locally |
+| Post-submission interface refinement | [PR #13](https://github.com/Guo7753/student-budget-app/pull/13), commits `05d2a7b`-`1add00d`, [iteration 2 refinement section](assignment-2-iteration-2.md), `npm test` (22 tests) | Implemented and author-verified; no independent teammate review (stated as a limitation) |
 | Final fixed submission | Repository commit or release | Pending after final review and merge |
 
 PR #11 must add the final review and CI links before submission. The group report should state the process-improvement limitation if no comparable review timing is available.

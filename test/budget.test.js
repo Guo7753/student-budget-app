@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   addExpense, updateExpense, removeExpense, totalForMonth, validateExpense,
-  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, CATEGORIES, CATEGORY_ICONS,
+  validateSettings, daysInMonth, budgetSummary, calculateAmount, categoryTotals, dailyTotals, balanceTrend,
+  validatePreset, addPreset, removePreset, incomeTotals, dailyIncomeTotals,
+  CATEGORIES, CATEGORY_ICONS, INCOME_CATEGORIES,
 } from "../src/budget.js";
 
 const sample = { amount: "12.50", date: "2026-11-06", category: "Food", note: "Lunch" };
@@ -107,4 +109,101 @@ test("adding an expense changes remaining amounts, not the daily budget", () => 
   assert.equal(after.dailyRemaining, -2.5);
   assert.equal(after.monthlyRemaining, 282.5);
   assert.equal(after.balance, 982.5);
+});
+
+test("daily totals add up each calendar day of the month", () => {
+  const expenses = [
+    { id: "a", amount: 10, date: "2026-11-02", category: "Food" },
+    { id: "b", amount: 2.5, date: "2026-11-02", category: "Food" },
+    { id: "c", amount: 5, date: "2026-11-05", category: "Study" },
+  ];
+  const totals = dailyTotals(expenses, "2026-11");
+  assert.equal(totals.length, 30);
+  assert.equal(totals[0].amount, 0);
+  assert.equal(totals[1].amount, 12.5);
+  assert.equal(totals[4].amount, 5);
+  assert.equal(totals.reduce((sum, item) => sum + item.amount, 0), 17.5);
+});
+
+test("daily totals ignore other months and respect month length", () => {
+  const expenses = [{ id: "a", amount: 10, date: "2026-10-02", category: "Food" }];
+  const february = dailyTotals(expenses, "2026-02");
+  assert.equal(february.length, 28);
+  assert.equal(february.reduce((sum, item) => sum + item.amount, 0), 0);
+  assert.deepEqual(dailyTotals(expenses, "not-a-month"), []);
+});
+
+test("balance trend subtracts spending day by day from the opening balance", () => {
+  const expenses = [
+    { id: "a", amount: 100, date: "2026-10-15", category: "Food" },
+    { id: "b", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "c", amount: 30, date: "2026-11-10", category: "Study" },
+  ];
+  const series = balanceTrend(expenses, 500, "2026-11");
+  assert.equal(series.length, 30);
+  assert.equal(series[0].balance, 400);
+  assert.equal(series[1].balance, 380);
+  assert.equal(series[9].balance, 350);
+  assert.equal(series[29].balance, 350);
+  assert.deepEqual(balanceTrend(expenses, 500, "not-a-month"), []);
+});
+
+test("quick add presets validate the amount, category and name", () => {
+  const valid = validatePreset({ amount: "12+3.5", category: "Food", note: "Lunch set" });
+  assert.equal(valid.valid, true);
+  assert.equal(valid.value.amount, 15.5);
+  assert.equal(valid.value.label, "Lunch set");
+  assert.equal(validatePreset({ amount: "0", category: "Food" }).valid, false);
+  assert.equal(validatePreset({ amount: "10", category: "Nope" }).valid, false);
+  assert.equal(validatePreset({ amount: "10", category: "Food", label: "x".repeat(41) }).valid, false);
+});
+
+test("quick add presets can be added and removed", () => {
+  const created = addPreset([], { amount: "4.5", category: "Food", note: "Coffee" }, "p1");
+  assert.equal(created.valid, true);
+  assert.equal(created.presets.length, 1);
+  assert.deepEqual(created.presets[0], { id: "p1", amount: 4.5, category: "Food", note: "Coffee", label: "Coffee" });
+  const updated = addPreset(created.presets, { amount: "9", category: "Transport" }, "p2");
+  assert.equal(updated.presets[1].label, "Transport");
+  assert.deepEqual(removePreset(updated.presets, "p1"), [updated.presets[1]]);
+});
+
+test("accepts income with an income category and rejects expense categories", () => {
+  const income = validateExpense({ type: "income", amount: "850", date: "2026-11-01", category: "Salary", note: "Part-time pay" });
+  assert.equal(income.valid, true);
+  assert.equal(income.value.type, "income");
+  assert.equal(income.value.amount, 850);
+  assert.equal(validateExpense({ type: "income", amount: "50", date: "2026-11-01", category: "Food" }).valid, false);
+  assert.equal(validateExpense({ type: "expense", amount: "50", date: "2026-11-01", category: "Salary" }).valid, false);
+});
+
+test("income is excluded from spending totals but increases the balance", () => {
+  const entries = [
+    { id: "e1", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "i1", type: "income", amount: 500, date: "2026-11-01", category: "Salary" },
+  ];
+  const summary = budgetSummary(entries, 100, 300, "2026-11", "2026-11-02");
+  assert.equal(summary.balance, 580);
+  assert.equal(summary.monthlySpent, 20);
+  assert.equal(summary.monthlyIncome, 500);
+  assert.equal(summary.dailySpent, 20);
+  assert.equal(categoryTotals(entries, "2026-11").reduce((sum, item) => sum + item.amount, 0), 20);
+  assert.equal(dailyTotals(entries, "2026-11")[1].amount, 20);
+  const income = incomeTotals(entries, "2026-11");
+  assert.equal(income.find((item) => item.category === "Salary").amount, 500);
+  assert.equal(INCOME_CATEGORIES.length, 6);
+});
+
+test("daily income totals keep income out of the spending series", () => {
+  const entries = [
+    { id: "e1", amount: 20, date: "2026-11-02", category: "Food" },
+    { id: "i1", type: "income", amount: 500, date: "2026-11-02", category: "Salary" },
+    { id: "i2", type: "income", amount: 100, date: "2026-11-09", category: "Refund" },
+  ];
+  const incomeDays = dailyIncomeTotals(entries, "2026-11");
+  const spendingDays = dailyTotals(entries, "2026-11");
+  assert.equal(incomeDays[1].amount, 500);
+  assert.equal(incomeDays[8].amount, 100);
+  assert.equal(spendingDays[1].amount, 20);
+  assert.equal(incomeDays.reduce((sum, item) => sum + item.amount, 0), 600);
 });
