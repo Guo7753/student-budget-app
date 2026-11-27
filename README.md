@@ -1,9 +1,16 @@
-﻿# Student Budget
+# Student Budget
 
 A small browser-based expense tracker built for the CISE group assessment. The topic was confirmed with the lecturer in class. This repository contains the working prototype from Assignment 1, the Assignment 2 increment, and the evidence used in the evaluation report.
 
 ![Student Budget dashboard](docs/images/dashboard-desktop.png)
 
+## Fixed submission
+
+- **Release:** [v2.0.0](https://github.com/Guo7753/student-budget-app/releases/tag/v2.0.0), merge commit `5e762b9`.
+- **Run locally:** `npm start` (serves http://127.0.0.1:8000, no dependencies or build step).
+- **Tests:** `npm test` runs 22 automated tests on Node 18 or later; the GitHub Actions "Tests" workflow runs the same command on every push and pull request.
+- **Evidence:** [docs/assignment-2-evidence-index.md](docs/assignment-2-evidence-index.md) links the requirements, reviewed pull requests, test and CI results, iteration records and measurements. The evaluation report source is [docs/assignment-2-report.md](docs/assignment-2-report.md).
+- **Generative AI:** the course permits AI assistance with disclosure. The team used AI assistance for drafting code and text and remains responsible for the submitted content; the verification path is recorded in the evidence index and the report appendix.
 The application has two pages, with a sticky top bar that carries the page tabs and a single expense/income switch:
 
 - **Data** - choose the month from a calendar picker, review the four summary cards and the monthly bar, add an expense or an income, set or clear the budget, and browse the month's records.
