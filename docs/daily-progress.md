@@ -1,4 +1,4 @@
-﻿# Assignment 2 daily progress log
+# Assignment 2 daily progress log
 
 This log records only verifiable Assignment 2 workdays. It is not a claim that work occurred every calendar day.
 
@@ -9,6 +9,8 @@ This log records only verifiable Assignment 2 workdays. It is not a claim that w
 | 25 November 2026 | Guo HouYang — merge and interface redesign | Li Hao's review of PR #11 was received and the pull request was merged into `main`; the report source and contribution statements were published; superseded [PR #9](https://github.com/Guo7753/student-budget-app/pull/9) was closed with a redirect note; [PR #13](https://github.com/Guo7753/student-budget-app/pull/13) was opened with the interface redesign plan and [Issue #12](https://github.com/Guo7753/student-budget-app/issues/12) set up as the daily progress record. | Publish the redesigned interface on PR #13, then collect a checklist-based review and record the first-review time. |
 | 25 November 2026 | Guo HouYang — daily trend and expandable panels | Added the daily spending trend with a fixed-daily-budget reference line, an English month selector that lists a rolling range of months, two-way synchronisation between the viewing date and the expense form date, and six expandable detail panels including a monthly calendar that marks each day against the daily budget. `npm test` passes 17 tests after adding `dailyTotals` and `balanceTrend`. | Record the limitation that this change was verified by the author with automated tests and browser checks rather than by a teammate review, then complete the report and demonstration. |
 | 26 November 2026 | Guo HouYang — income, quick adds and page split | Split the interface into Data and Insights pages with top navigation; moved the calendar heatmap into the monthly budget breakdown; added the budget pace card and the burn-down chart; added income with six income categories and an income donut chart (income adds to the balance only and never changes the budget); added quick add presets that load into the form; limited the history list to ten entries with a show-all control. `npm test` passes 22 tests after the income calendar, sticky navigation and dual Insights views were added. | Confirm the interface with the team, then finish the evaluation report and the demonstration materials. |
+
+| 27 November 2026 | Guo HouYang — merge, release and final report | Merged [PR 13](https://github.com/Guo7753/student-budget-app/pull/13) into `main` (merge commit `5e762b9`) and published [release v2.0.0](https://github.com/Guo7753/student-budget-app/releases/tag/v2.0.0) as the fixed submission; finalized the group evaluation report, the evidence index and the individual contribution statements. `npm test` passes 22 tests on the merged code. | Submit the report PDF by 4 December 2026; keep the demonstration materials with the submission. |
 
 ## Recording rule
 
